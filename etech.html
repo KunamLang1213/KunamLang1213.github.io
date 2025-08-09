@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampung Salita na Hindi Gaanong Ginagamit ng mga Filipino</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .word-list {
+            max-width: 800px;
+            margin: 0 auto;
+            display: block; /* Single column layout */
+            padding: 20px;
+        }
+        .word-item {
+            position: relative;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            cursor: pointer;
+            margin-bottom: 15px; /* Spacing between items */
+        }
+        .definition {
+            display: none; /* Initially hidden */
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+            opacity: 0; /* Start with opacity 0 for animation */
+            transition: opacity 0.5s ease; /* Transition for opacity */
+        }
+        .definition.show {
+            display: block; /* Show when class is added */
+            opacity: 1; /* Fade in */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sampung Salita na Hindi Gaanong Ginagamit ng mga Filipino</h1>
+    <div class="word-list">
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Salinlahi</span>
+            <div class="definition">Ang salitang ito ay tumutukoy sa henerasyon o lahi ng mga tao.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Bughaw</span>
+            <div class="definition">Isang kulay na katulad ng asul, madalas na ginagamit sa mga lumang tula.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Damdamin</span>
+            <div class="definition">Tumutukoy sa mga emosyon o nararamdaman ng isang tao.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Kamalayan</span>
+            <div class="definition">Ang estado ng pagiging mulat o may kaalaman sa mga bagay-bagay.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Pagsasakatawan</span>
+            <div class="definition">Ang proseso ng pagpapahayag ng isang ideya o konsepto sa ibang anyo.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Siklab</span>
+            <div class="definition">Isang biglaang pagsiklab o pag-aalab ng damdamin o emosyon.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Tadhana</span>
+            <div class="definition">Ang kapalaran o nakatakdang mangyari sa buhay ng isang tao.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Bituin</span>
+            <div class="definition">Isang celestial na katawan na nagbibigay ng liwanag sa gabi.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Himig</span>
+            <div class="definition">Ang tunog o melodiya na nilikha ng isang instrumento o boses.</div>
+        </div>
+        <div class="word-item" onclick="toggleDefinition(this)">
+            <span class="word">Sining</span>
+            <div class="definition">Isang anyo ng pagpapahayag ng damdamin at ideya sa pamamagitan ng iba't ibang anyo.</div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDefinition(element) {
+            // Get all definitions
+            const definitions = document.querySelectorAll('.definition');
+            // Hide all definitions
+            definitions.forEach(def => {
+                def.classList.remove('show'); // Remove show class to hide
+            });
+            // Show the clicked definition
+            const definition = element.querySelector('.definition');
+            if (definition.classList.contains('show')) {
+                definition.classList.remove('show'); // Hide if already shown
+            } else {
+                definition.classList.add('show'); // Show the clicked definition
+            }
+        }
+    </script>
+
+</body>
+</html>
