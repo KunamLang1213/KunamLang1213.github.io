@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampung Salita na Hindi Gaanong Ginagamit ng mga Filipino</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .word {
+            background: rgba(255,255,255,0.8);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: #34495e;
+        }
+        .word:hover {
+            background: rgba(255,255,255,0.95);
+            transform: translateY(-3px);
+        }
+        .definition {
+            display: none;
+            padding: 10px;
+            background: #ffffff;
+            border-left: 4px solid #ff9a9e;
+            margin-top: 5px;
+            border-radius: 5px;
+            animation: fadeIn 0.3s ease-in-out;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+            color: #555;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .video-section {
+            margin-top: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.8);
+            padding: 15px;
+        }
+        .video-description {
+            margin-bottom: 10px;
+            font-size: 1em;
+            font-weight: normal;
+            color: #2c3e50;
+            padding: 10px 20px;
+            background-color: rgb(241, 230, 230);
+            border-radius: 8px;
+            text-indent: 50px;
+        }
+        .video-frame {
+            text-align: center;
+        }
+        .video-frame video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sampung Salita na Hindi Gaanong Ginagamit ng mga Filipino</h1>
+  <div class="word">Muni-Muni (To think Deeply)
+        <div class="definition">The act of deep contemplation or reflection.</div>
+    </div>
+    <div class="word">Pantablay (Charger)
+        <div class="definition">A device used for charging storage bateries</div>
+    </div>
+    <div class="word">Hambog (Arrogant)
+        <div class="definition">An insulting attitude of people who belive they are better than others</div>
+    </div>
+    <div class="word">Sakinsukob (Universe)
+        <div class="definition">Entirety of space and time including planets, stars and matter</div>
+    </div>
+    <div class="word">Batlag (Car)
+        <div class="definition">Self powered motor vehicle used for transportation</div>
+    </div>
+    <div class="word">Alimusom (Fragrant)
+        <div class="definition">A sweet or delicate odor</div>
+    </div>
+    <div class="word">Dumatal (Arrived)
+        <div class="definition"></div>
+    </div>
+    <div class="word">Panginain (Browser)
+        <div class="definition">A program that is used to find and look at information in the internet</div>
+    </div>
+    <div class="word">Payneta (Comb)
+        <div class="definition">A stip of platic with a row narrow teeth, used for untangling or arranging the hair</div>
+        </div>
+
+    <div class="video-section">
+            <p class="video-description">Ang sumusunod na video ay nagbibigay ng dagdag kaalaman tungkol sa kahalagahan ng mga salitang ito sa ating wika.</p>
+            <div class="video-frame">
+                <iframe src="https://www.youtube.com/embed/_jqGlC-Xs0A" width="560" height="315" allowfullscreen></iframe>
+            </div>
