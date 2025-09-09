@@ -1,165 +1,238 @@
 <!DOCTYPE html>
-<html lang="tl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sampung Salita na Hindi Gaanong Ginagamit ng mga Filipino</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #2c3e50;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            max-width: 600px;
-            width: 100%;
-        }
-        h1 {
-            text-align: center;
-            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .word {
-            background: rgba(255,255,255,0.8);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.3s ease, background 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            color: #34495e;
-        }
-        .word:hover {
-            background: rgba(255,255,255,0.95);
-            transform: translateY(-3px);
-        }
-        .definition {
-            display: none;
-            padding: 10px;
-            background: #ffffff;
-            border-left: 4px solid #ff9a9e;
-            margin-top: 5px;
-            border-radius: 5px;
-            animation: fadeIn 0.3s ease-in-out;
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
-            color: #555;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .video-section {
-            margin-top: 30px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            background: rgba(255,255,255,0.8);
-            padding: 15px;
-        }
-        .video-description {
-            margin-bottom: 10px;
-            font-size: 1em;
-            font-weight: normal;
-            color: #2c3e50;
-            padding: 10px 20px;
-            background-color: rgb(241, 230, 230);
-            border-radius: 8px;
-            text-indent: 50px;
-        }
-        .video-frame {
-            text-align: center;
-        }
-        iframe {
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        /* 📱 MOBILE VIEW (Responsive CSS) */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .container {
-                max-width: 100%;
-            }
-            iframe {
-                width: 100%;
-                height: 220px;
-            }
-            .video-description {
-                font-size: 0.9em;
-                text-indent: 20px;
-            }
-        }
-
-        /* 💻 DESKTOP VIEW */
-        @media (min-width: 769px) {
-            iframe {
-                width: 560px;
-                height: 315px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WIKIPEDIA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    header {
+      background-color: #eaecf0;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #a2a9b1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    nav ul li {
+      margin-left: 2rem;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: #0645ad;
+      font-weight: bold;
+    }
+    nav ul li a:hover {
+      text-decoration: underline;
+    }
+    main {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .hero h2 {
+      font-size: 2.5rem;
+      color: #000;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: #666;
+    }
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .search-bar input {
+      width: 50%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+    }
+    .search-bar button {
+      padding: 0.8rem 1.5rem;
+      background-color: #0645ad;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+    }
+    .search-bar button:hover {
+      background-color: #042a84;
+    }
+    .section {
+      background-color: #fff;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .section h3 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      color: #000;
+    }
+    .section p {
+      margin-bottom: 1rem;
+    }
+    .featured-image {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .featured-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+    }
+    .articles-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    .articles-list ul li {
+      margin-bottom: 0.5rem;
+    }
+    .articles-list ul li a {
+      text-decoration: none;
+      color: #0645ad;
+    }
+    .articles-list ul li a:hover {
+      text-decoration: underline;
+    }
+    .article {
+      background-color: #fff;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .article h2 {
+      color: #000;
+      font-size: 1.8rem;
+      border-bottom: 2px solid #eaecf0;
+      padding-bottom: 0.5rem;
+    }
+    .article p {
+      margin-bottom: 1rem;
+    }
+    footer {
+      background-color: #eaecf0;
+      text-align: center;
+      padding: 1rem;
+      border-top: 1px solid #a2a9b1;
+      margin-top: 2rem;
+    }
+    footer p {
+      margin: 0;
+      color: #666;
+    }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav ul li {
+        margin-left: 1rem;
+      }
+      .search-bar input {
+        width: 80%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sampung Salita na Hindi Gaanong Ginagamit ng mga Filipino</h1>
-        <div class="word">Muni-Muni (To think Deeply)
-            <div class="definition">The act of deep contemplation or reflection</div>
-        </div>
-        <div class="word">Pantablay (Charger)
-            <div class="definition">A device used for charging storage batteries</div>
-        </div>
-        <div class="word">Hambog (Arrogant)
-            <div class="definition">An insulting attitude of people who believe they are better than others</div>
-        </div>
-        <div class="word">Sakinsukob (Universe)
-            <div class="definition">Entirety of space and time including planets, stars and matter</div>
-        </div>
-        <div class="word">Batlag (Car)
-            <div class="definition">Self powered motor vehicle used for transportation</div>
-        </div>
-        <div class="word">Alimusom (Fragrant)
-            <div class="definition">A sweet or delicate odor</div>
-        </div>
-        <div class="word">Dumatal (Arrived)
-            <div class="definition">Reached a place or at the end of a journey</div>
-        </div>
-        <div class="word">Panginain (Browser)
-            <div class="definition">A program that is used to find and look at information in the internet</div>
-        </div>
-        <div class="word">Payneta (Comb)
-            <div class="definition">A strip of plastic with a row narrow teeth, used for untangling or arranging the hair</div>
-        </div>
-
-        <div class="video-section">
-            <p class="video-description">Ang sumusunod na video ay nagbibigay ng dagdag kaalaman tungkol sa salitang ito</p>
-            <div class="video-frame">
-                <iframe src="https://www.youtube.com/embed/MUqgEOBjKtc" allowfullscreen></iframe>
-            </div>
-        </div>
+  <header>
+    <h1>Wikipedia</h1>
+    <nav>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#articles">Articles</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <h2>Impact of Social Media During Calamities</h2>
+      <p>Haan guman gana links ;D</p>
+    </section>
+    <div class="featured-image">
+      <img src="https://media.mehrnews.com/d/2019/04/09/4/3095007.jpg" alt="No Internet connection..." />
     </div>
-
-    <script>
-        // Toggle definitions on click
-        document.querySelectorAll('.word').forEach(item => {
-            item.addEventListener('click', () => {
-                const def = item.querySelector('.definition');
-                def.style.display = def.style.display === 'block' ? 'none' : 'block';
-            });
-        });
-
-        // OPTIONAL: Explicit device detection for custom changes
-        if (/Mobi|Android/i.test(navigator.userAgent)) {
-            console.log("Mobile detected - layout adjusted");
+    <section class="search-bar">
+      <input type="text" id="search" placeholder="haan guman gana ngem maka type ka">
+      <button onclick="searchArticles()">Search</button>
+    </section>
+    <section class="section recent-articles">
+      <h3>Recent Articles</h3>
+      <div class="articles-list">
+        <ul>
+          <li><a href="#">Article 1: Introduction to Social Media</a></li>
+          <li><a href="#">Article 2: History of Social Media</a></li>
+          <li><a href="#social-media-impact">Article 3: Impact of Social Media During Calamities</a></li>
+        </ul>
+      </div>
+    </section>
+    <section class="section categories">
+      <h3>Categories</h3>
+      <p>Explore topics such as Science, History, Culture, and more.</p>
+      <ul>
+        <li>Science</li>
+        <li>History</li>
+        <li>Culture</li>
+        <li>Technology</li>
+        <li>Social Issues</li>
+      </ul>
+    </section>
+    <section class="article" id="social-media-impact">
+      <h2>Impact of Social Media During Calamities</h2>
+      <p>Social media has changed the way families, social workers, and the government get important information, especially during calamities like natural disasters and the recent pandemic. Before, we mostly relied on traditional media like TV, radio, and newspapers for news. These sources were good but had some limits. Now, social media has become a faster and more helpful tool for sharing updates and staying connected.</p>
+      <p>During disasters, families use social media to quickly find out what is happening and where help is available. They can see posts from neighbors, friends, and emergency services that give real-time updates. This helps families make better decisions to stay safe and find food, shelter, or medical aid. In the past, they had to wait for TV news or radio announcements, which might come later and not have enough details for their specific area.</p>
+      <p>Social workers benefit a lot from social media as well. They use it to communicate with affected people and organize relief efforts more efficiently. They can spread important health tips or warnings instantly to large groups. During the pandemic, social workers used social media to share advice on safety measures like wearing masks and social distancing. This was different from the older way of doing things because they didn’t have to rely only on printed flyers or announcements on radio.</p>
+      <p>For the government, social media has been a powerful tool to reach citizens quickly and directly. Governments can post official updates on social media platforms to inform the public about lockdowns, vaccination schedules, or emergency rules. This reaches people faster than waiting for a news broadcast. Also, governments can listen to what people are saying through social media, which helps them understand concerns and react better.</p>
+    </section>
+  </main>
+  <footer>
+    <p>© 2025 Wikipedia. All rights reserved.</p>
+  </footer>
+ <script>
+    function searchArticles() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const articles = document.querySelectorAll('.articles-list ul li a');
+      articles.forEach(article => {
+        const text = article.textContent.toLowerCase();
+        if (text.includes(query)) {
+          article.style.display = 'block';
         } else {
-            console.log("Desktop detected - layout adjusted");
+          article.style.display = 'none';
         }
-    </script>
+      });
+    }
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  </script>
 </body>
 </html>
+</content>
+</create_file>
