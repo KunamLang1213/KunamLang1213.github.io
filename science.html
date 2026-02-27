@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Science Hub — Unplug to Reconnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0B0B0B;
+  --bg2:#111;
+  --bg3:#161616;
+  --surface:#1C1C1C;
+  --white:#F0EEE9;
+  --dim:#888;
+  --dimmer:#444;
+  --red:#FF3B3B;
+  --amber:#F5A623;
+  --blue:#4A9EFF;
+  --green:#3DFF8F;
+  --purple:#A78BFA;
+  --line:rgba(240,238,233,0.07);
+  --line2:rgba(240,238,233,0.12);
+  --line-blue:rgba(74,158,255,0.15);
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--bg);
+  color:var(--white);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+.cur{position:fixed;pointer-events:none;z-index:9999;top:0;left:0;}
+.cur-d{width:6px;height:6px;background:var(--blue);border-radius:50%;transform:translate(-50%,-50%);}
+.cur-r{
+  width:32px;height:32px;
+  border:1px solid rgba(74,158,255,0.4);
+  border-radius:50%;transform:translate(-50%,-50%);
+  transition:width .15s,height .15s,border-color .15s;
+}
+.cur-r.xl{width:52px;height:52px;border-color:var(--blue);}
+
+body::after{
+  content:'';position:fixed;inset:0;z-index:9990;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+
+/* ── LOADER ── */
+#loader{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .7s,visibility .7s;
+}
+#loader.gone{opacity:0;visibility:hidden;}
+.ld-top{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:var(--blue);animation:blink-in .4s ease .3s both;}
+.ld-bar{width:220px;height:2px;background:rgba(74,158,255,0.15);}
+.ld-fill{height:100%;background:var(--blue);width:0;animation:ld-progress 1.6s ease .4s both;}
+@keyframes ld-progress{to{width:100%;}}
+.ld-pct{font-family:'Space Mono',monospace;font-size:2.5rem;font-weight:700;color:var(--blue);letter-spacing:-.02em;}
+.ld-msg{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dimmer);animation:blink-in .5s ease 1s both;}
+@keyframes blink-in{from{opacity:0;}to{opacity:1;}}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  border-bottom:1px solid transparent;
+  transition:background .3s,border-color .3s;
+}
+nav.scrolled{background:rgba(11,11,11,.95);backdrop-filter:blur(12px);border-color:var(--line-blue);}
+.nav-logo{
+  font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;
+  color:var(--white);text-decoration:none;letter-spacing:.02em;
+  display:flex;align-items:center;gap:10px;
+}
+.logo-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;animation:pulse-b 2s ease-in-out infinite;}
+@keyframes pulse-b{0%,100%{box-shadow:0 0 0 0 rgba(74,158,255,.4);}50%{box-shadow:0 0 0 8px rgba(74,158,255,0);}}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{
+  font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 22px;background:var(--blue);color:#000;
+  text-decoration:none;cursor:none;font-weight:700;
+  transition:background .2s,transform .2s;display:inline-flex;align-items:center;gap:8px;
+}
+.nav-cta:hover{background:#7bc3ff;transform:translateY(-1px);}
+.nav-cta.ghost{background:transparent;color:rgba(240,238,233,.5);border:1px solid rgba(240,238,233,.15);}
+.nav-cta.ghost:hover{background:rgba(240,238,233,.05);color:var(--white);}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:grid;grid-template-rows:1fr auto;
+  position:relative;overflow:hidden;
+  background:var(--bg);
+}
+.hero-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(74,158,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(74,158,255,.03) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.hero-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 40%,rgba(0,0,0,.7) 100%);
+}
+.hero-content{
+  position:relative;z-index:3;padding:0 48px;
+  display:flex;flex-direction:column;justify-content:center;padding-top:120px;
+}
+.hero-tag{
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--blue);
+  display:flex;align-items:center;gap:12px;margin-bottom:28px;
+  opacity:0;animation:slide-up .7s ease 2s both;
+}
+.tag-bar{width:24px;height:1px;background:var(--blue);}
+h1.hero-h1{
+  font-size:clamp(3.5rem,9vw,11rem);font-weight:700;line-height:.9;
+  letter-spacing:-.04em;text-transform:uppercase;margin-bottom:0;
+  opacity:0;animation:slide-up .8s ease 2.1s both;
+}
+.h1-blue{display:block;color:var(--blue);}
+.h1-white{display:block;color:var(--white);}
+.h1-dim{display:block;color:var(--white);opacity:.1;}
+
+.hero-bottom{
+  position:relative;z-index:3;
+  padding:40px 48px 56px;
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+  border-top:1px solid var(--line-blue);
+  opacity:0;animation:slide-up .8s ease 2.35s both;
+}
+.hb-cell{padding:28px 32px;border-right:1px solid rgba(74,158,255,.1);}
+.hb-cell:first-child{padding-left:0;}
+.hb-cell:last-child{border-right:none;}
+.hb-num{font-family:'Space Mono',monospace;font-size:2.8rem;font-weight:700;line-height:1;letter-spacing:-.03em;color:var(--blue);margin-bottom:6px;}
+.hb-num span{font-size:1.2rem;}
+.hb-label{font-size:.72rem;font-weight:300;line-height:1.6;color:var(--dim);}
+
+@keyframes slide-up{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+
+/* ── MARQUEE (blue) ── */
+.mq{background:var(--blue);padding:12px 0;overflow:hidden;}
+.mq-track{display:flex;white-space:nowrap;animation:mq 26s linear infinite;}
+@keyframes mq{to{transform:translateX(-50%);}}
+.mq-item{display:inline-flex;align-items:center;gap:16px;padding:0 28px;font-family:'Space Mono',monospace;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#000;}
+.mq-sep{font-size:.5rem;opacity:.4;}
+
+/* ── SECTION COMMON ── */
+.sec-tag{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);display:flex;align-items:center;gap:10px;}
+.sec-tag::before{content:'';width:16px;height:1px;background:var(--blue);}
+
+/* ═══════════════════════════════════
+   NEUROSCIENCE
+═══════════════════════════════════ */
+.neuro-sec{background:var(--bg2);padding:0;}
+.neuro-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:80px 48px 48px;border-bottom:1px solid var(--line2);
+}
+.neuro-h2{font-size:clamp(2.5rem,4.5vw,5.5rem);font-weight:700;text-transform:uppercase;line-height:.92;letter-spacing:-.03em;text-align:right;}
+.neuro-h2 .acc{color:var(--blue);}
+
+/* Brain diagram strip */
+.brain-strip{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  border-bottom:1px solid var(--line2);
+}
+.brain-cell{
+  padding:44px 40px;border-right:1px solid var(--line2);
+  position:relative;overflow:hidden;transition:background .3s;
+}
+.brain-cell:last-child{border-right:none;}
+.brain-cell:hover{background:rgba(74,158,255,.04);}
+.bc-bar{position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform .5s ease;}
+.brain-cell:hover .bc-bar{transform:scaleX(1);}
+.bc-icon{
+  width:48px;height:48px;margin-bottom:20px;
+  border:1px solid rgba(74,158,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--blue);
+}
+.bc-title{font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:var(--white);letter-spacing:.05em;margin-bottom:10px;}
+.bc-body{font-size:.78rem;font-weight:300;line-height:1.7;color:var(--dim);}
+.bc-stat{
+  font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;
+  color:var(--blue);margin-top:16px;letter-spacing:-.03em;
+}
+.bc-stat-label{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dimmer);}
+
+/* Two col explainer */
+.neuro-body{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line2);}
+.nb-col{padding:52px 48px;border-right:1px solid var(--line2);}
+.nb-col:last-child{border-right:none;}
+.pb-label{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dimmer);margin-bottom:20px;}
+.nb-text{font-size:.9rem;font-weight:300;line-height:1.9;color:rgba(240,238,233,.65);}
+.nb-text strong{color:var(--white);font-weight:500;}
+
+/* ═══════════════════════════════════
+   RESEARCH TIMELINE
+═══════════════════════════════════ */
+.timeline-sec{background:var(--bg);padding:0;}
+.tl-header{
+  padding:80px 48px 48px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px solid var(--line2);
+}
+.tl-header h2{font-size:clamp(2.8rem,5vw,6rem);font-weight:700;text-transform:uppercase;letter-spacing:-.03em;line-height:.92;}
+.tl-header h2 em{font-style:normal;color:var(--blue);}
+
+.timeline{padding:0 48px;border-bottom:1px solid var(--line2);}
+.tl-item{
+  display:grid;grid-template-columns:100px 1fr;
+  gap:40px;padding:40px 0;
+  border-bottom:1px solid var(--line);
+  transition:padding-left .2s;
+}
+.tl-item:last-child{border:none;}
+.tl-item:hover{padding-left:8px;}
+.tl-year{
+  font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;
+  color:var(--blue);opacity:.5;padding-top:4px;
+}
+.tl-content h4{font-size:.9rem;font-weight:700;color:var(--white);margin-bottom:8px;letter-spacing:.01em;}
+.tl-content p{font-size:.8rem;font-weight:300;line-height:1.75;color:var(--dim);}
+.tl-content .tl-tag{
+  display:inline-flex;font-family:'Space Mono',monospace;font-size:.52rem;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--purple);border:1px solid rgba(167,139,250,.25);
+  padding:3px 8px;margin-bottom:10px;
+}
+
+/* ═══════════════════════════════════
+   EXPERT VOICES
+═══════════════════════════════════ */
+.experts-sec{background:var(--bg2);border-top:1px solid var(--line2);}
+.ex-header{
+  padding:80px 48px 48px;
+  border-bottom:1px solid var(--line2);
+}
+.ex-header h2{font-size:clamp(2.5rem,4vw,5rem);font-weight:700;text-transform:uppercase;letter-spacing:-.03em;line-height:.92;}
+.ex-header h2 .acc{color:var(--purple);}
+
+.ex-grid{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--line2);}
+.ex-card{
+  padding:44px 36px;border-right:1px solid var(--line2);
+  position:relative;overflow:hidden;
+}
+.ex-card:last-child{border-right:none;}
+.ex-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--purple),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.ex-card:hover::before{opacity:1;}
+.ex-quote{
+  font-size:.88rem;font-weight:300;line-height:1.85;
+  color:rgba(240,238,233,.75);margin-bottom:24px;
+  font-style:italic;
+}
+.ex-quote::before{content:'"';color:var(--purple);font-size:2rem;line-height:.5;display:block;margin-bottom:12px;font-style:normal;}
+.ex-name{font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:var(--white);letter-spacing:.05em;}
+.ex-role{font-size:.7rem;font-weight:300;color:var(--dimmer);margin-top:4px;}
+.ex-inst{
+  font-family:'Space Mono',monospace;font-size:.52rem;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--purple);
+  margin-top:8px;opacity:.7;
+}
+
+/* ═══════════════════════════════════
+   RECOVERY DATA
+═══════════════════════════════════ */
+.recovery-sec{background:var(--bg);}
+.rec-header{
+  padding:80px 48px 48px;
+  border-bottom:1px solid var(--line2);
+  display:flex;align-items:flex-end;justify-content:space-between;
+}
+.rec-header h2{font-size:clamp(2.5rem,4vw,5rem);font-weight:700;text-transform:uppercase;letter-spacing:-.03em;line-height:.92;}
+.rec-header h2 .acc{color:var(--green);}
+
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line2);}
+.rec-col{padding:52px 48px;border-right:1px solid var(--line2);}
+.rec-col:last-child{border-right:none;}
+.rec-col h3{font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:var(--green);letter-spacing:.08em;margin-bottom:28px;}
+
+.progress-item{margin-bottom:24px;}
+.pi-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.pi-label{font-size:.8rem;font-weight:300;color:rgba(240,238,233,.7);}
+.pi-val{font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:var(--green);}
+.pi-track{height:3px;background:rgba(61,255,143,.1);position:relative;overflow:hidden;}
+.pi-fill{height:100%;background:var(--green);transform-origin:left;transform:scaleX(0);transition:transform 1.2s cubic-bezier(.16,1,.3,1);}
+.pi-fill.animated{transform:scaleX(1);}
+.pi-time{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dimmer);margin-top:6px;}
+
+.timeline-cards{display:flex;flex-direction:column;gap:0;}
+.tc{
+  display:flex;gap:20px;padding:20px 0;
+  border-bottom:1px solid var(--line);
+  transition:padding-left .2s;
+}
+.tc:last-child{border:none;}
+.tc:hover{padding-left:6px;}
+.tc-time{
+  font-family:'Space Mono',monospace;font-size:.65rem;font-weight:700;
+  color:var(--green);min-width:60px;padding-top:3px;
+}
+.tc-title{font-size:.82rem;font-weight:700;color:var(--white);margin-bottom:4px;}
+.tc-body{font-size:.75rem;font-weight:300;line-height:1.65;color:var(--dim);}
+
+/* ═══════════════════════════════════
+   MYTH BUSTING
+═══════════════════════════════════ */
+.myth-sec{background:var(--bg2);border-top:1px solid var(--line2);}
+.myth-header{padding:80px 48px 48px;border-bottom:1px solid var(--line2);}
+.myth-header h2{font-size:clamp(2.5rem,4vw,5rem);font-weight:700;text-transform:uppercase;letter-spacing:-.03em;line-height:.92;}
+.myth-header h2 .acc{color:var(--amber);}
+
+.myth-grid{display:grid;grid-template-columns:1fr 1fr;}
+.myth-item{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--line2);border-right:1px solid var(--line2);
+}
+.myth-item:nth-child(2n){border-right:none;}
+.myth-item:nth-last-child(-n+2){border-bottom:none;}
+.myth-half{padding:36px 40px;position:relative;}
+.myth-half:first-child{border-right:1px solid var(--line2);}
+.myth-tag{
+  font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;
+  padding:4px 10px;margin-bottom:14px;display:inline-flex;
+}
+.myth-tag.false{color:var(--red);border:1px solid rgba(255,59,59,.25);}
+.myth-tag.fact{color:var(--green);border:1px solid rgba(61,255,143,.25);}
+.myth-text{font-size:.82rem;font-weight:300;line-height:1.75;color:rgba(240,238,233,.7);}
+
+/* ═══════════════════════════════════
+   TOOLS & APPS
+═══════════════════════════════════ */
+.tools-sec{background:var(--bg);}
+.tools-header{padding:80px 48px 48px;border-bottom:1px solid var(--line2);}
+.tools-header h2{font-size:clamp(2.5rem,4vw,5rem);font-weight:700;text-transform:uppercase;letter-spacing:-.03em;line-height:.92;}
+.tools-header h2 .acc{color:var(--amber);}
+
+.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line2);}
+.tool-card{
+  padding:36px 32px;border-right:1px solid var(--line2);
+  position:relative;overflow:hidden;transition:background .3s;
+}
+.tool-card:last-child{border-right:none;}
+.tool-card:hover{background:rgba(245,166,35,.03);}
+.tool-top-bar{position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber);transform:scaleX(0);transform-origin:left;transition:transform .5s;}
+.tool-card:hover .tool-top-bar{transform:scaleX(1);}
+.tool-icon{
+  width:44px;height:44px;margin-bottom:16px;
+  background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+}
+.tool-name{font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:6px;letter-spacing:.04em;}
+.tool-platform{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;opacity:.7;}
+.tool-desc{font-size:.77rem;font-weight:300;line-height:1.7;color:var(--dim);}
+.tool-badge{
+  display:inline-flex;margin-top:12px;
+  font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.15em;
+  text-transform:uppercase;padding:3px 8px;
+  border:1px solid rgba(61,255,143,.25);color:var(--green);
+}
+
+/* ═══════════════════════════════════
+   FAQ
+═══════════════════════════════════ */
+.faq-sec{background:var(--bg2);border-top:1px solid var(--line2);}
+.faq-header{padding:80px 48px 48px;border-bottom:1px solid var(--line2);}
+.faq-header h2{font-size:clamp(2.5rem,4vw,5rem);font-weight:700;text-transform:uppercase;letter-spacing:-.03em;}
+.faq-header h2 .acc{color:var(--blue);}
+
+.faq-body{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line2);}
+.faq-col{padding:20px 48px 48px;border-right:1px solid var(--line2);}
+.faq-col:last-child{border-right:none;}
+.faq-item{border-bottom:1px solid var(--line);overflow:hidden;}
+.faq-item:last-child{border:none;}
+.faq-q{
+  padding:22px 0;cursor:none;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.85rem;font-weight:500;color:var(--white);
+  gap:20px;transition:color .2s;
+}
+.faq-q:hover{color:var(--blue);}
+.faq-arrow{
+  font-family:'Space Mono',monospace;font-size:.7rem;color:var(--dimmer);
+  transition:transform .3s,color .3s;flex-shrink:0;
+}
+.faq-item.open .faq-arrow{transform:rotate(45deg);color:var(--blue);}
+.faq-a{
+  max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.16,1,.3,1);
+}
+.faq-item.open .faq-a{max-height:200px;}
+.faq-a p{font-size:.8rem;font-weight:300;line-height:1.8;color:var(--dim);padding-bottom:22px;}
+
+/* ═══════════════════════════════════
+   BACK CTA
+═══════════════════════════════════ */
+.back-cta{
+  background:var(--bg);border-top:1px solid var(--line2);
+  padding:100px 48px;
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+  position:relative;overflow:hidden;
+}
+.back-cta::before{
+  content:'←';position:absolute;left:-40px;top:50%;transform:translateY(-50%);
+  font-family:'Space Mono',monospace;font-size:28rem;font-weight:700;
+  color:rgba(74,158,255,.025);line-height:1;pointer-events:none;
+}
+.bc-left h2{font-size:clamp(3rem,5.5vw,7rem);font-weight:700;text-transform:uppercase;letter-spacing:-.04em;line-height:.9;margin-bottom:20px;}
+.bc-left h2 em{font-style:normal;color:var(--blue);}
+.bc-left p{font-size:.9rem;font-weight:300;line-height:1.9;color:var(--dim);margin-bottom:40px;max-width:420px;}
+.bc-btns{display:flex;gap:14px;flex-wrap:wrap;}
+.bc-right{display:flex;align-items:center;justify-content:center;}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--surface);border-top:1px solid var(--line2);
+  padding:36px 48px;display:flex;align-items:center;justify-content:space-between;
+}
+.foot-logo{font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700;color:rgba(240,238,233,.4);letter-spacing:.05em;display:flex;align-items:center;gap:8px;}
+.foot-ld{width:6px;height:6px;background:var(--blue);border-radius:50%;}
+.foot-copy{font-size:.6rem;letter-spacing:.15em;color:var(--dimmer);}
+.foot-link{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(74,158,255,.3);padding-bottom:2px;transition:color .2s,border-color .2s;cursor:none;}
+.foot-link:hover{color:#fff;border-color:var(--blue);}
+
+/* ── SCROLL REVEAL ── */
+.sr{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
+.sr.in{opacity:1;transform:none;}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+@media(max-width:960px){
+  nav{padding:18px 24px;}
+  .nav-links{display:none;}
+  .hero-content{padding:0 24px;padding-top:100px;}
+  .hero-bottom{grid-template-columns:1fr 1fr;padding:0 24px 40px;}
+  .hb-cell{border-bottom:1px solid rgba(74,158,255,.1);}
+  .neuro-header,.tl-header,.ex-header,.rec-header,.myth-header,.tools-header,.faq-header,.back-cta{padding-left:24px;padding-right:24px;}
+  .brain-strip{grid-template-columns:1fr;}
+  .brain-cell{border-right:none;border-bottom:1px solid var(--line2);}
+  .neuro-body,.rec-grid{grid-template-columns:1fr;}
+  .nb-col,.rec-col{border-right:none;border-bottom:1px solid var(--line2);}
+  .ex-grid,.tools-grid{grid-template-columns:1fr;}
+  .ex-card,.tool-card{border-right:none;border-bottom:1px solid var(--line2);}
+  .myth-grid{grid-template-columns:1fr;}
+  .myth-item{border-right:none;grid-template-columns:1fr;}
+  .myth-half:first-child{border-right:none;border-bottom:1px solid var(--line2);}
+  .faq-body{grid-template-columns:1fr;}
+  .faq-col{border-right:none;border-bottom:1px solid var(--line2);}
+  .back-cta{grid-template-columns:1fr;padding:64px 24px;}
+  .back-cta::before{display:none;}
+  .bc-right{display:none;}
+  footer{padding:28px 24px;flex-direction:column;gap:12px;}
+  .timeline{padding:0 24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="ld-top">// LOADING RESEARCH DATABASE</div>
+  <div class="ld-pct" id="ldPct">0%</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+  <div class="ld-msg">Compiling neuroscience data...</div>
+</div>
+
+<!-- Cursor -->
+<div class="cur" id="cD"><div class="cur-d"></div></div>
+<div class="cur" id="cR"><div class="cur-r" id="cREl"></div></div>
+
+<!-- Nav -->
+<nav id="nav">
+  <a href="index.html" class="nav-logo"><span class="logo-dot"></span>UNPLUG</a>
+  <ul class="nav-links">
+    <li><a href="#neuroscience">Neuroscience</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#recovery">Recovery</a></li>
+    <li><a href="#tools">Tools</a></li>
+  </ul>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <a href="index.html" class="nav-cta ghost">← Main Site</a>
+    <a href="index.html#challenge" class="nav-cta">Take the Challenge →</a>
+  </div>
+</nav>
+
+<!-- ═════ HERO ═════ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-content">
+    <div class="hero-tag"><span class="tag-bar"></span>The Science Hub — Evidence-Based Research</div>
+    <h1 class="hero-h1">
+      <span class="h1-blue">THE</span>
+      <span class="h1-white">SCIENCE</span>
+      <span class="h1-blue">BEHIND</span>
+      <span class="h1-dim">ADDICTION</span>
+    </h1>
+  </div>
+  <div class="hero-bottom">
+    <div class="hb-cell">
+      <div class="hb-num">400<span>+</span></div>
+      <div class="hb-label">Peer-reviewed studies on social media's neurological impact</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-num">11<span>yr</span></div>
+      <div class="hb-label">Average lifetime screen hours the current generation will spend</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-num">72<span>h</span></div>
+      <div class="hb-label">For dopamine receptors to begin resensitizing after a detox</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-num">4<span>×</span></div>
+      <div class="hb-label">Higher deep-focus capacity reported after a 7-day digital detox</div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="mq">
+  <div class="mq-track">
+    <div class="mq-item">DOPAMINE DYSREGULATION<span class="mq-sep">///</span></div>
+    <div class="mq-item">PREFRONTAL CORTEX THINNING<span class="mq-sep">///</span></div>
+    <div class="mq-item">MELATONIN SUPPRESSION<span class="mq-sep">///</span></div>
+    <div class="mq-item">VARIABLE REWARD SCHEDULES<span class="mq-sep">///</span></div>
+    <div class="mq-item">AMYGDALA HYPERACTIVATION<span class="mq-sep">///</span></div>
+    <div class="mq-item">NEUROPLASTICITY RECOVERY<span class="mq-sep">///</span></div>
+    <div class="mq-item">ATTENTION RESTORATION THEORY<span class="mq-sep">///</span></div>
+    <div class="mq-item">DOPAMINE DYSREGULATION<span class="mq-sep">///</span></div>
+    <div class="mq-item">PREFRONTAL CORTEX THINNING<span class="mq-sep">///</span></div>
+    <div class="mq-item">MELATONIN SUPPRESSION<span class="mq-sep">///</span></div>
+    <div class="mq-item">VARIABLE REWARD SCHEDULES<span class="mq-sep">///</span></div>
+    <div class="mq-item">AMYGDALA HYPERACTIVATION<span class="mq-sep">///</span></div>
+    <div class="mq-item">NEUROPLASTICITY RECOVERY<span class="mq-sep">///</span></div>
+    <div class="mq-item">ATTENTION RESTORATION THEORY<span class="mq-sep">///</span></div>
+  </div>
+</div>
+
+<!-- ═════ NEUROSCIENCE ═════ -->
+<section class="neuro-sec" id="neuroscience">
+  <div class="neuro-header sr">
+    <div class="sec-tag">01 — Neuroscience</div>
+    <h2 class="neuro-h2">YOUR BRAIN IS<br>BEING <span class="acc">REWIRED</span><br>IN REAL TIME</h2>
+  </div>
+
+  <div class="brain-strip">
+    <div class="brain-cell sr">
+      <div class="bc-bar"></div>
+      <div class="bc-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+          <path d="M12 9v3l2 2"/>
+          <path d="M7 12h2M15 12h2M12 7v2M12 15v2"/>
+        </svg>
+      </div>
+      <div class="bc-title">DOPAMINE LOOP</div>
+      <div class="bc-body">Social platforms engineer variable-reward schedules identical to slot machines. Each scroll is a pull of the lever — unpredictable rewards create compulsive checking behavior by hijacking the nucleus accumbens.</div>
+      <div class="bc-stat">2.7<span style="font-size:1rem">×</span></div>
+      <div class="bc-stat-label">More dopamine triggered by social notifications vs. in-person interaction</div>
+    </div>
+    <div class="brain-cell sr d1">
+      <div class="bc-bar"></div>
+      <div class="bc-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <div class="bc-title">PREFRONTAL THINNING</div>
+      <div class="bc-body">MRI studies show measurable cortical thinning in the prefrontal cortex — the seat of decision-making, impulse control, and long-term planning — in heavy smartphone users aged 14–22. This region is still developing until age 25.</div>
+      <div class="bc-stat">14<span style="font-size:1rem">%</span></div>
+      <div class="bc-stat-label">Reduced grey matter density in heavy users vs. control group (Osaka University, 2022)</div>
+    </div>
+    <div class="brain-cell sr d2">
+      <div class="bc-bar"></div>
+      <div class="bc-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+          <path d="M12 2a10 10 0 0 1 0 20 10 10 0 0 1 0-20"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div class="bc-title">SLEEP ARCHITECTURE</div>
+      <div class="bc-body">Blue light at 460–490nm wavelengths suppresses melatonin secretion by up to 85%. Screen use within 90 minutes of bedtime delays sleep onset, reduces REM duration, and impairs memory consolidation that occurs during deep sleep stages.</div>
+      <div class="bc-stat">85<span style="font-size:1rem">%</span></div>
+      <div class="bc-stat-label">Melatonin suppression from 30 min of screen exposure before sleep</div>
+    </div>
+  </div>
+
+  <div class="neuro-body">
+    <div class="nb-col sr">
+      <div class="pb-label">// The addiction mechanism</div>
+      <p class="nb-text">The same neural circuitry that governs addiction to substances governs technology addiction. <strong>Intermittent variable reward</strong> — the unpredictable appearance of likes, messages, and novel content — is the most powerful conditioning schedule known in behavioral psychology. Slot machines use the same principle.</p>
+      <p class="nb-text" style="margin-top:18px">When you check your phone and find a notification, dopamine floods your striatum. When you don't, dopamine drops — creating an aversive state that compels you to check again. This creates a <strong>compulsive loop that operates below conscious intention</strong>, which is why "just checking" always becomes more.</p>
+    </div>
+    <div class="nb-col sr d1">
+      <div class="pb-label">// Why adolescents are uniquely vulnerable</div>
+      <p class="nb-text">Adolescent brains have a fully developed limbic system (emotion, reward, impulse) but an <strong>underdeveloped prefrontal cortex</strong> (regulation, long-term thinking, inhibition). This developmental mismatch means teens experience digital rewards more intensely and have less neurological capacity to resist them.</p>
+      <p class="nb-text" style="margin-top:18px">Critically, the prefrontal cortex completes development around age 25. Patterns formed during adolescence — including digital habits — become deeply encoded as <strong>default behavioral pathways</strong>. What you do now shapes the brain you'll have for the rest of your life.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ RESEARCH TIMELINE ═════ -->
+<section class="timeline-sec" id="research">
+  <div class="tl-header sr">
+    <div>
+      <div class="sec-tag" style="margin-bottom:16px">02 — Research Timeline</div>
+      <h2>10 YEARS OF<br><em>EVIDENCE</em></h2>
+    </div>
+    <div style="font-size:.8rem;font-weight:300;line-height:1.8;color:var(--dim);max-width:340px;">A chronological record of landmark studies that collectively proved what we now know: digital overconsumption is reshaping adolescent development at scale.</div>
+  </div>
+  <div class="timeline">
+    <div class="tl-item sr">
+      <div class="tl-year">2012</div>
+      <div class="tl-content">
+        <span class="tl-tag">Harvard Medical School</span>
+        <h4>Smartphones and Cortisol Elevation</h4>
+        <p>Researchers documented that smartphone checking triggers a cortisol stress response indistinguishable from physical threat detection. Participants checking phones over 80 times per day showed chronically elevated cortisol — a major driver of anxiety, inflammation, and immune dysfunction.</p>
+      </div>
+    </div>
+    <div class="tl-item sr">
+      <div class="tl-year">2014</div>
+      <div class="tl-content">
+        <span class="tl-tag">University of Michigan</span>
+        <h4>The "Facebook Depression" Effect</h4>
+        <p>First major longitudinal study to show that passive social media consumption (scrolling without engaging) was a stronger predictor of depression and loneliness than active use. The comparison mechanism — seeing curated highlights of others' lives — was identified as the primary driver.</p>
+      </div>
+    </div>
+    <div class="tl-item sr">
+      <div class="tl-year">2017</div>
+      <div class="tl-content">
+        <span class="tl-tag">Jean Twenge / San Diego State University</span>
+        <h4>iGen: The Correlation Inflection Point</h4>
+        <p>Twenge's landmark analysis of 500,000 adolescents identified 2012 — the year smartphone adoption crossed 50% among US teens — as a sharp inflection point for depression, anxiety, loneliness, and suicide risk. The correlation remained significant after controlling for dozens of confounding variables.</p>
+      </div>
+    </div>
+    <div class="tl-item sr">
+      <div class="tl-year">2019</div>
+      <div class="tl-content">
+        <span class="tl-tag">UCL / Nature Human Behaviour</span>
+        <h4>Dose-Response Relationship Confirmed</h4>
+        <p>The largest study to date (12,000+ participants) confirmed a dose-response relationship between social media use and poor mental health, particularly among girls aged 11–13. Even one additional hour per day above baseline showed measurable wellbeing effects.</p>
+      </div>
+    </div>
+    <div class="tl-item sr">
+      <div class="tl-year">2022</div>
+      <div class="tl-content">
+        <span class="tl-tag">Osaka University</span>
+        <h4>Structural Brain Changes in Adolescents</h4>
+        <p>MRI neuroimaging confirmed structural changes in prefrontal cortex grey matter density among heavy smartphone users, with effect sizes comparable to those seen in substance addiction studies. This was the first study to show technology addiction leaving visible marks on the developing brain.</p>
+      </div>
+    </div>
+    <div class="tl-item sr">
+      <div class="tl-year">2024</div>
+      <div class="tl-content">
+        <span class="tl-tag">Jonathan Haidt / "The Anxious Generation"</span>
+        <h4>The Great Rewiring Thesis</h4>
+        <p>Synthesizing thousands of studies, Haidt argued that the simultaneous decline in unsupervised outdoor play and rise of phone-based childhood has created a mental health crisis across all developed nations. His four proposed harms — social deprivation, sleep deprivation, attention fragmentation, and addiction — have reshaped global policy conversations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ EXPERT VOICES ═════ -->
+<section class="experts-sec" id="experts">
+  <div class="ex-header sr">
+    <div class="sec-tag" style="margin-bottom:16px">03 — Expert Voices</div>
+    <h2>WHAT THE <span class="acc">RESEARCHERS</span> SAY</h2>
+  </div>
+  <div class="ex-grid">
+    <div class="ex-card sr">
+      <p class="ex-quote">We have unwittingly created a massive social experiment on our children. The tech companies knew they were creating products that were hard to put down. They chose engagement over the wellbeing of their youngest users.</p>
+      <div class="ex-name">Dr. Jonathan Haidt</div>
+      <div class="ex-role">Social Psychologist & Author, The Anxious Generation</div>
+      <div class="ex-inst">NYU Stern School of Business</div>
+    </div>
+    <div class="ex-card sr d1">
+      <p class="ex-quote">The adolescent brain is essentially in a hypersensitive reward state. Combine that with a device that delivers variable rewards every few minutes and you have a perfect storm for addictive behavior that bypasses willpower entirely.</p>
+      <div class="ex-name">Dr. Frances Jensen</div>
+      <div class="ex-role">Neurologist & Author, The Teenage Brain</div>
+      <div class="ex-inst">University of Pennsylvania</div>
+    </div>
+    <div class="ex-card sr d2">
+      <p class="ex-quote">We are what we repeatedly do. What concerns me most is not screen time per se, but the displacement of the activities that build resilience, creativity, and authentic connection — activities that are now simply being skipped.</p>
+      <div class="ex-name">Dr. Maryanne Wolf</div>
+      <div class="ex-role">Cognitive Neuroscientist & Reading Researcher</div>
+      <div class="ex-inst">UCLA</div>
+    </div>
+    <div class="ex-card sr">
+      <p class="ex-quote">Sleep is the single most effective thing we can do to reset our brain and body health each day. The invasion of devices into the bedroom is, without exaggeration, one of the greatest public health challenges of our time.</p>
+      <div class="ex-name">Dr. Matthew Walker</div>
+      <div class="ex-role">Sleep Scientist & Author, Why We Sleep</div>
+      <div class="ex-inst">University of California, Berkeley</div>
+    </div>
+    <div class="ex-card sr d1">
+      <p class="ex-quote">Attention is the rarest and purest form of generosity. A distracted society is not just unproductive — it is profoundly lonely. We are physically present to each other while being cognitively absent, and we are losing something irreplaceable.</p>
+      <div class="ex-name">Dr. Simone Weil</div>
+      <div class="ex-role">Philosopher (adapted for digital context)</div>
+      <div class="ex-inst">On the nature of focused presence</div>
+    </div>
+    <div class="ex-card sr d2">
+      <p class="ex-quote">The digital detox studies consistently show the same pattern: within 72 hours, anxiety decreases, sleep improves, and reported life satisfaction rises. The brain begins to resensitize to lower levels of stimulation almost immediately.</p>
+      <div class="ex-name">Dr. Anna Lembke</div>
+      <div class="ex-role">Psychiatrist & Author, Dopamine Nation</div>
+      <div class="ex-inst">Stanford University School of Medicine</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ RECOVERY DATA ═════ -->
+<section class="recovery-sec" id="recovery">
+  <div class="rec-header sr">
+    <div>
+      <div class="sec-tag" style="margin-bottom:16px">04 — Recovery Data</div>
+      <h2>YOUR BRAIN<br>CAN <span class="acc">HEAL</span></h2>
+    </div>
+    <div style="font-size:.8rem;font-weight:300;line-height:1.8;color:var(--dim);max-width:360px;">Neuroplasticity is real. The same brain that was rewired by excessive screen time can be rewired back. Here's what the data shows about recovery timelines.</div>
+  </div>
+  <div class="rec-grid">
+    <div class="rec-col sr">
+      <h3>// RECOVERY OUTCOMES (% improvement from baseline)</h3>
+      <div class="progress-item">
+        <div class="pi-header"><span class="pi-label">Sleep quality</span><span class="pi-val">+67%</span></div>
+        <div class="pi-track"><div class="pi-fill" style="--w:0.67"></div></div>
+        <div class="pi-time">after 7 days</div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-header"><span class="pi-label">Sustained focus duration</span><span class="pi-val">+400%</span></div>
+        <div class="pi-track"><div class="pi-fill" style="--w:0.9"></div></div>
+        <div class="pi-time">after 7 days (from 8 min avg to 40 min avg)</div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-header"><span class="pi-label">Self-reported anxiety levels</span><span class="pi-val">-43%</span></div>
+        <div class="pi-track"><div class="pi-fill" style="--w:0.43"></div></div>
+        <div class="pi-time">after 3 days</div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-header"><span class="pi-label">Reported life satisfaction</span><span class="pi-val">+38%</span></div>
+        <div class="pi-track"><div class="pi-fill" style="--w:0.38"></div></div>
+        <div class="pi-time">after 1 week</div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-header"><span class="pi-label">Boredom tolerance</span><span class="pi-val">+280%</span></div>
+        <div class="pi-track"><div class="pi-fill" style="--w:0.75"></div></div>
+        <div class="pi-time">after 14 days</div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-header"><span class="pi-label">Creative output (self-reported)</span><span class="pi-val">+52%</span></div>
+        <div class="pi-track"><div class="pi-fill" style="--w:0.52"></div></div>
+        <div class="pi-time">after 14 days</div>
+      </div>
+    </div>
+    <div class="rec-col sr d1">
+      <h3>// WHAT HAPPENS HOUR BY HOUR</h3>
+      <div class="timeline-cards">
+        <div class="tc"><div class="tc-time">00–02h</div><div><div class="tc-title">The Itch Begins</div><div class="tc-body">Phantom vibration syndrome activates. Most people check their pocket repeatedly. Dopamine dips slightly as the brain registers the absence of expected stimuli.</div></div></div>
+        <div class="tc"><div class="tc-time">02–06h</div><div><div class="tc-title">FOMO Peak</div><div class="tc-body">Peak anxiety window. The brain generates worst-case scenarios about what is being missed. This is the hardest phase — but it's entirely psychological, not neurological danger.</div></div></div>
+        <div class="tc"><div class="tc-time">06–24h</div><div><div class="tc-title">Settling In</div><div class="tc-body">Cortisol levels begin to normalize. Attention span begins to extend. Most participants report unexpected moments of clarity and present-awareness within this window.</div></div></div>
+        <div class="tc"><div class="tc-time">24–72h</div><div><div class="tc-title">Dopamine Reset</div><div class="tc-body">Receptor sensitivity begins recovering. Activities that once felt boring become engaging again. Sleep quality measurably improves from night one. Creativity returns.</div></div></div>
+        <div class="tc"><div class="tc-time">7+ days</div><div><div class="tc-title">Structural Recovery</div><div class="tc-body">Prefrontal cortex activity patterns begin normalizing. Focus capacity increases substantially. The brain re-learns to generate its own reward from presence, conversation, and sustained work.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ MYTH BUSTING ═════ -->
+<section class="myth-sec" id="myths">
+  <div class="myth-header sr">
+    <div class="sec-tag" style="margin-bottom:16px">05 — Myths vs. Facts</div>
+    <h2>WHAT PEOPLE<br>GET <span class="acc">WRONG</span></h2>
+  </div>
+  <div class="myth-grid">
+    <div class="myth-item sr">
+      <div class="myth-half">
+        <span class="myth-tag false">Myth</span>
+        <p class="myth-text">"I can multitask — I study better with my phone nearby because I can quickly look things up."</p>
+      </div>
+      <div class="myth-half">
+        <span class="myth-tag fact">Fact</span>
+        <p class="myth-text">Merely having a smartphone visible (even face-down) reduces working memory capacity by up to 20%. The brain allocates cognitive resources to actively suppressing the impulse to check. There is no such thing as productive multitasking between digital and cognitive work.</p>
+      </div>
+    </div>
+    <div class="myth-item sr d1">
+      <div class="myth-half">
+        <span class="myth-tag false">Myth</span>
+        <p class="myth-text">"Social media keeps me connected to my friends. It's a social tool, not an antisocial one."</p>
+      </div>
+      <div class="myth-half">
+        <span class="myth-tag fact">Fact</span>
+        <p class="myth-text">Passive consumption — which constitutes over 80% of social media use — is strongly associated with increased loneliness, not reduced. In-person time and direct messaging show positive correlation with wellbeing. Scrolling feeds does not. The medium matters.</p>
+      </div>
+    </div>
+    <div class="myth-item sr">
+      <div class="myth-half">
+        <span class="myth-tag false">Myth</span>
+        <p class="myth-text">"I'm not addicted — I can put my phone down whenever I want. I just choose not to."</p>
+      </div>
+      <div class="myth-half">
+        <span class="myth-tag fact">Fact</span>
+        <p class="myth-text">The ability to theoretically stop is not the same as the ability to actually stop. Clinical addiction is defined by continued use despite negative consequences, failed attempts to reduce, and preoccupation with the substance. Many heavy users meet 2–3 of the DSM-5 criteria for behavioral addiction.</p>
+      </div>
+    </div>
+    <div class="myth-item sr d1">
+      <div class="myth-half">
+        <span class="myth-tag false">Myth</span>
+        <p class="myth-text">"Boredom is bad and should be eliminated. Screen time fills otherwise wasted time productively."</p>
+      </div>
+      <div class="myth-half">
+        <span class="myth-tag fact">Fact</span>
+        <p class="myth-text">Boredom is neurologically productive. The default mode network — active during rest and mind-wandering — is responsible for creativity, self-reflection, empathy, and future planning. Eliminating boredom eliminates the conditions for your brain's most important work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ TOOLS & APPS ═════ -->
+<section class="tools-sec" id="tools">
+  <div class="tools-header sr">
+    <div class="sec-tag" style="margin-bottom:16px">06 — Practical Tools</div>
+    <h2>REBUILD YOUR<br><span class="acc">ATTENTION</span></h2>
+  </div>
+  <div class="tools-grid">
+    <div class="tool-card sr">
+      <div class="tool-top-bar"></div>
+      <div class="tool-icon">🧘</div>
+      <div class="tool-name">OPAL</div>
+      <div class="tool-platform">iOS · macOS</div>
+      <div class="tool-desc">Deep focus blocking that syncs across all your Apple devices. Creates scheduled "focus sessions" and provides detailed analytics on your actual vs. intended usage patterns. Genuinely difficult to override — by design.</div>
+      <span class="tool-badge">Highly Recommended</span>
+    </div>
+    <div class="tool-card sr d1">
+      <div class="tool-top-bar"></div>
+      <div class="tool-icon">🔒</div>
+      <div class="tool-name">ONE SEC</div>
+      <div class="tool-platform">iOS · Android</div>
+      <div class="tool-desc">Inserts a one-second breathing pause before opening any selected app. The friction is minimal but enormously effective at creating a "choice point" that interrupts unconscious habitual opening. A behavioral intervention backed by clinical trials.</div>
+      <span class="tool-badge">Science-Backed</span>
+    </div>
+    <div class="tool-card sr d2">
+      <div class="tool-top-bar"></div>
+      <div class="tool-icon">📵</div>
+      <div class="tool-name">FREEDOM</div>
+      <div class="tool-platform">All Platforms</div>
+      <div class="tool-desc">Block distracting websites and apps across all your devices simultaneously. Schedule recurring focus blocks, lock yourself out during exams, and sync restrictions so a blocked site on your phone is also blocked on your laptop. Cross-platform and very difficult to bypass.</div>
+      <span class="tool-badge">Cross-Platform</span>
+    </div>
+    <div class="tool-card sr">
+      <div class="tool-top-bar"></div>
+      <div class="tool-icon">📖</div>
+      <div class="tool-name">ANALOG</div>
+      <div class="tool-platform">Physical Product</div>
+      <div class="tool-desc">A beautifully designed physical card system for daily task management. Replace your phone's task app with something that requires no screen time. Research shows physical writing improves retention, planning, and follow-through compared to digital equivalents.</div>
+      <span class="tool-badge">Off-Screen</span>
+    </div>
+    <div class="tool-card sr d1">
+      <div class="tool-top-bar"></div>
+      <div class="tool-icon">⏱</div>
+      <div class="tool-name">FOREST</div>
+      <div class="tool-platform">iOS · Android</div>
+      <div class="tool-desc">Gamifies phone-free time by growing a virtual (and real) tree when you stay off your phone. The visual metaphor of a growing or dead tree makes the cost of interruption tangible. Proceeds from premium subscriptions plant actual trees.</div>
+      <span class="tool-badge">Gamified</span>
+    </div>
+    <div class="tool-card sr d2">
+      <div class="tool-top-bar"></div>
+      <div class="tool-icon">🌙</div>
+      <div class="tool-name">BEDTIME MODE</div>
+      <div class="tool-platform">Built-In (iOS & Android)</div>
+      <div class="tool-desc">Both major mobile platforms have built-in wind-down features that dim the screen, enable grayscale mode (which dramatically reduces dopaminergic stimulation), and silence all non-critical notifications. Free, effective, and requires no download — just commitment.</div>
+      <span class="tool-badge">Free · Built-In</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ FAQ ═════ -->
+<section class="faq-sec" id="faq">
+  <div class="faq-header sr">
+    <div class="sec-tag" style="margin-bottom:16px">07 — Common Questions</div>
+    <h2>QUESTIONS &<br><span class="acc">ANSWERS</span></h2>
+  </div>
+  <div class="faq-body">
+    <div class="faq-col">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Is technology use ever actually okay?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>Yes — intentional, active technology use for specific purposes (video calls, learning, creating) is categorically different from passive scrolling. The evidence consistently shows that passive consumption is the harmful pattern, not screens per se. The goal is intention, not abstinence.</p></div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">How long does a meaningful detox need to be?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>Even 24 hours produces measurable cortisol reduction. 72 hours shows dopamine receptor recovery beginning. 7 days produces significant improvements in focus, sleep, and life satisfaction in clinical studies. The challenge starts with one day — which is why we recommend it as your first step.</p></div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">What if I need my phone for school or work?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>You almost certainly need your phone for specific tasks — not for 7.2 hours of undifferentiated use. App-specific blocking lets you keep necessary tools available while eliminating the applications driving compulsive use. Almost no student genuinely needs Instagram to complete their coursework.</p></div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Won't I miss out on important social interactions?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>FOMO (fear of missing out) is itself a product of social media use — it's created by the platform to keep you engaged, not a reflection of reality. Studies show that 24–48 hours after a detox begins, FOMO anxiety significantly decreases as the brain adjusts. You will not miss anything you can't catch up on.</p></div>
+      </div>
+    </div>
+    <div class="faq-col">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Is this just moral panic about new technology?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>This is a legitimate and fair challenge. The difference between smartphone concern and previous moral panics (TV, video games) is the strength, consistency, and replicability of the evidence — especially neuroimaging data showing structural brain changes — and the dose-response relationship across multiple independent research groups.</p></div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">What should I actually do during a detox?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>Plan at least three activities in advance: one physical (walk, sport, cooking), one creative (drawing, writing, music), and one social (in-person time with someone). Keep a paper journal. The goal is not empty time but intentionally filled time. Boredom between activities is productive — let it happen.</p></div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Can I use this campaign's resources in a school context?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>Yes — all materials from this campaign are free for educational use. Teachers, school counselors, and student wellness coordinators are encouraged to adapt the checklist, share the data, and run classroom or school-wide versions of the 24-hour challenge. Contact us for a teacher's pack.</p></div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Where can I read the original research?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><p>Key starting points: Haidt & Twenge (2019) in PLOS ONE, Twenge's iGen dataset, Jean Twenge's "Increases in Depressive Symptoms," Anna Lembke's Dopamine Nation (2021), and Walker's Why We Sleep (2017). All primary studies are available via Google Scholar. PubMed is the best database for neuroimaging work.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ BACK CTA ═════ -->
+<div class="back-cta">
+  <div class="bc-left sr">
+    <h2>READY TO<br><em>ACT</em> ON IT?</h2>
+    <p>You now know the neuroscience. You've read the research. You understand what's happening and why it's happening. The only thing left is to do something about it.</p>
+    <div class="bc-btns">
+      <a href="index.html#challenge" class="nav-cta">Take the 24hr Challenge →</a>
+      <a href="index.html" style="font-family:'Space Mono',monospace;font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(240,238,233,.2);color:rgba(240,238,233,.6);padding:10px 22px;text-decoration:none;cursor:none;transition:all .2s;display:inline-flex;align-items:center;" onmouseenter="this.style.borderColor='rgba(240,238,233,.5)';this.style.color='var(--white)'" onmouseleave="this.style.borderColor='rgba(240,238,233,.2)';this.style.color='rgba(240,238,233,.6)'">← Back to Main Site</a>
+    </div>
+  </div>
+  <div class="bc-right sr d1">
+    <!-- Brain SVG -->
+    <svg viewBox="0 0 340 340" width="300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Neural network nodes -->
+      <circle cx="170" cy="170" r="18" fill="rgba(74,158,255,0.15)" stroke="rgba(74,158,255,0.5)" stroke-width="1.5"/>
+      <circle cx="170" cy="170" r="6" fill="var(--blue)" opacity=".8"><animate attributeName="r" values="6;9;6" dur="2s" repeatCount="indefinite"/></circle>
+
+      <!-- Connections -->
+      <line x1="170" y1="170" x2="80" y2="90" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="170" y1="170" x2="260" y2="90" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="170" y1="170" x2="60" y2="200" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="170" y1="170" x2="280" y2="200" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="170" y1="170" x2="120" y2="280" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="170" y1="170" x2="220" y2="280" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="170" y1="170" x2="170" y2="60" stroke="rgba(74,158,255,0.2)" stroke-width="1"/>
+      <line x1="80" y1="90" x2="260" y2="90" stroke="rgba(74,158,255,0.1)" stroke-width=".8"/>
+      <line x1="60" y1="200" x2="120" y2="280" stroke="rgba(74,158,255,0.1)" stroke-width=".8"/>
+      <line x1="280" y1="200" x2="220" y2="280" stroke="rgba(74,158,255,0.1)" stroke-width=".8"/>
+
+      <!-- Outer nodes -->
+      <circle cx="80" cy="90" r="8" fill="rgba(74,158,255,0.1)" stroke="rgba(74,158,255,0.35)" stroke-width="1"><animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/></circle>
+      <circle cx="260" cy="90" r="8" fill="rgba(61,255,143,0.1)" stroke="rgba(61,255,143,0.35)" stroke-width="1"><animate attributeName="opacity" values="1;0.4;1" dur="2.5s" repeatCount="indefinite"/></circle>
+      <circle cx="60" cy="200" r="8" fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.35)" stroke-width="1"><animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite"/></circle>
+      <circle cx="280" cy="200" r="8" fill="rgba(74,158,255,0.1)" stroke="rgba(74,158,255,0.35)" stroke-width="1"><animate attributeName="opacity" values="1;0.3;1" dur="3.5s" repeatCount="indefinite"/></circle>
+      <circle cx="120" cy="280" r="8" fill="rgba(61,255,143,0.1)" stroke="rgba(61,255,143,0.35)" stroke-width="1"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/></circle>
+      <circle cx="220" cy="280" r="8" fill="rgba(245,166,35,0.1)" stroke="rgba(245,166,35,0.35)" stroke-width="1"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/></circle>
+      <circle cx="170" cy="60" r="8" fill="rgba(74,158,255,0.1)" stroke="rgba(74,158,255,0.35)" stroke-width="1"><animate attributeName="opacity" values="1;0.5;1" dur="4.5s" repeatCount="indefinite"/></circle>
+
+      <!-- Traveling signals -->
+      <circle r="3" fill="var(--blue)" opacity=".8">
+        <animateMotion path="M170,170 L80,90" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle r="3" fill="var(--green)" opacity=".8">
+        <animateMotion path="M170,170 L280,200" dur="2.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="2.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle r="3" fill="var(--purple)" opacity=".8">
+        <animateMotion path="M170,170 L220,280" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+
+      <text x="170" y="328" text-anchor="middle" font-family="'Space Mono',monospace" font-size="8" fill="rgba(74,158,255,0.3)" letter-spacing="4" font-weight="700">NEUROPLASTICITY</text>
+    </svg>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-logo"><span class="foot-ld"></span>UNPLUG — SCIENCE HUB</div>
+  <a href="index.html" class="foot-link">← Return to Main Site</a>
+  <div class="foot-copy">Digital Detox Initiative · Student Wellness Campaign · 2025</div>
+</footer>
+
+<script>
+// Loader
+window.addEventListener('load', () => {
+  let n = 0;
+  const el = document.getElementById('ldPct');
+  const iv = setInterval(() => {
+    n = Math.min(100, n + Math.floor(Math.random() * 10) + 2);
+    el.textContent = n + '%';
+    if (n >= 100) { clearInterval(iv); setTimeout(() => document.getElementById('loader').classList.add('gone'), 300); }
+  }, 70);
+});
+
+// Cursor
+const cD=document.getElementById('cD'), cR=document.getElementById('cR'), cREl=document.getElementById('cREl');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function a(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; cD.style.cssText=`left:${mx}px;top:${my}px`; cR.style.cssText=`left:${rx}px;top:${ry}px`; requestAnimationFrame(a); })();
+document.querySelectorAll('a,button,.brain-cell,.tl-item,.ex-card,.tc,.tool-card,.faq-item,.myth-item').forEach(el => {
+  el.addEventListener('mouseenter', () => cREl.classList.add('xl'));
+  el.addEventListener('mouseleave', () => cREl.classList.remove('xl'));
+});
+
+// Nav scroll
+window.addEventListener('scroll', () => { document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50); });
+
+// Scroll reveal
+const io = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }); }, { threshold: 0.08 });
+document.querySelectorAll('.sr').forEach(el => io.observe(el));
+
+// Progress bars
+const io2 = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.pi-fill').forEach((bar, i) => {
+        const pcts = [0.67, 0.9, 0.43, 0.38, 0.75, 0.52];
+        setTimeout(() => { bar.style.transform = `scaleX(${pcts[i] || 0.5})`; bar.classList.add('animated'); }, i * 120);
+      });
+    }
+  });
+}, { threshold: 0.2 });
+document.querySelectorAll('.rec-col').forEach(el => io2.observe(el));
+
+// FAQ
+function toggleFaq(el) {
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(item => item.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+</script>
+</body>
+</html>

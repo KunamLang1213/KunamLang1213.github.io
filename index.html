@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unplug to Reconnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0B0B0B;
+  --bg2:#111;
+  --bg3:#161616;
+  --surface:#1C1C1C;
+  --white:#F0EEE9;
+  --dim:#888;
+  --dimmer:#444;
+  --red:#FF3B3B;
+  --amber:#F5A623;
+  --blue:#4A9EFF;
+  --green:#3DFF8F;
+  --line:rgba(240,238,233,0.07);
+  --line2:rgba(240,238,233,0.12);
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--bg);
+  color:var(--white);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+.cur{position:fixed;pointer-events:none;z-index:9999;top:0;left:0;}
+.cur-d{
+  width:6px;height:6px;background:var(--red);
+  border-radius:50%;transform:translate(-50%,-50%);
+}
+.cur-r{
+  width:32px;height:32px;
+  border:1px solid rgba(255,59,59,0.4);
+  border-radius:50%;transform:translate(-50%,-50%);
+  transition:width .15s,height .15s,border-color .15s;
+}
+.cur-r.xl{width:52px;height:52px;border-color:var(--red);}
+
+/* ── SCAN LINES ── */
+body::after{
+  content:'';position:fixed;inset:0;z-index:9990;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ── LOADER ── */
+#loader{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .7s,visibility .7s;
+}
+#loader.gone{opacity:0;visibility:hidden;}
+.ld-top{
+  font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;
+  color:var(--red);animation:blink-in .4s ease .3s both;
+}
+.ld-bar{width:220px;height:2px;background:rgba(255,59,59,0.15);}
+.ld-fill{height:100%;background:var(--red);width:0;animation:ld-progress 1.8s ease .4s both;}
+@keyframes ld-progress{to{width:100%;}}
+.ld-pct{
+  font-family:'Space Mono',monospace;font-size:2.5rem;font-weight:700;
+  color:var(--red);letter-spacing:-.02em;
+  animation:count-up 1.8s ease .4s both;
+}
+@keyframes count-up{
+  0%{opacity:0;}10%{opacity:1;}
+}
+.ld-msg{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dimmer);animation:blink-in .5s ease 1s both;}
+@keyframes blink-in{from{opacity:0;}to{opacity:1;}}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  border-bottom:1px solid transparent;
+  transition:background .3s,border-color .3s;
+}
+nav.scrolled{background:rgba(11,11,11,.95);backdrop-filter:blur(12px);border-color:var(--line2);}
+.nav-logo{
+  font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;
+  color:var(--white);text-decoration:none;letter-spacing:.02em;
+  display:flex;align-items:center;gap:10px;
+}
+.logo-dot{width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,59,.4);}50%{box-shadow:0 0 0 8px rgba(255,59,59,0);}}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{
+  font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--dim);text-decoration:none;transition:color .2s;
+}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{
+  font-family:'Space Mono',monospace;
+  font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 22px;background:var(--red);color:#000;
+  text-decoration:none;cursor:none;font-weight:700;
+  transition:background .2s,transform .2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.nav-cta:hover{background:#ff6060;transform:translateY(-1px);}
+.nav-cta.ghost{
+  background:transparent;
+  color:var(--blue);
+  border:1px solid rgba(74,158,255,0.35);
+}
+.nav-cta.ghost:hover{background:rgba(74,158,255,0.1);border-color:var(--blue);}
+
+/* ═══════════════════════════════════
+   HERO
+═══════════════════════════════════ */
+.hero{
+  min-height:100vh;
+  display:grid;grid-template-rows:1fr auto;
+  position:relative;overflow:hidden;
+  background:var(--bg);
+}
+
+.hero-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,59,59,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,59,59,.03) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.hero-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 40%,rgba(0,0,0,.7) 100%);
+}
+
+.hero-live{
+  position:absolute;top:90px;right:48px;z-index:4;
+  text-align:right;
+  opacity:0;animation:blink-in .6s ease 2.4s both;
+}
+.live-label{
+  font-family:'Space Mono',monospace;font-size:.55rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--red);
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  margin-bottom:8px;
+}
+.live-dot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:pulse 1.5s ease-in-out infinite;}
+.live-screen-time{
+  font-family:'Space Mono',monospace;font-size:3.5rem;font-weight:700;
+  color:var(--white);line-height:1;letter-spacing:-.03em;
+}
+.live-unit{font-size:.7rem;letter-spacing:.1em;color:var(--dim);}
+.live-today{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dimmer);margin-top:4px;}
+
+.hero-content{
+  position:relative;z-index:3;
+  padding:0 48px 0;
+  display:flex;flex-direction:column;justify-content:center;
+  padding-top:120px;
+}
+.hero-tag{
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--red);
+  display:flex;align-items:center;gap:12px;margin-bottom:28px;
+  opacity:0;animation:slide-up .7s ease 2s both;
+}
+.tag-bar{width:24px;height:1px;background:var(--red);}
+h1.hero-h1{
+  font-size:clamp(4rem,10vw,12rem);
+  font-weight:700;line-height:.9;letter-spacing:-.04em;
+  text-transform:uppercase;
+  margin-bottom:0;
+  opacity:0;animation:slide-up .8s ease 2.1s both;
+}
+.h1-line1{display:block;color:var(--white);}
+.h1-line2{
+  display:block;color:transparent;
+  -webkit-text-stroke:2px var(--red);
+  position:relative;
+}
+.h1-line2::before,.h1-line2::after{
+  content:attr(data-text);
+  position:absolute;left:0;top:0;
+  -webkit-text-stroke:2px var(--red);color:transparent;
+}
+.h1-line2::before{
+  color:rgba(74,158,255,.25);-webkit-text-stroke:0;
+  animation:glitch1 4s infinite;clip-path:polygon(0 0,100% 0,100% 40%,0 40%);
+}
+.h1-line2::after{
+  color:rgba(61,255,143,.2);-webkit-text-stroke:0;
+  animation:glitch2 4s infinite;clip-path:polygon(0 60%,100% 60%,100% 100%,0 100%);
+}
+@keyframes glitch1{
+  0%,92%,100%{transform:none;opacity:0;}
+  93%{transform:translate(-3px,1px);opacity:1;}
+  95%{transform:translate(3px,-1px);opacity:1;}
+  97%{transform:translate(-2px,0);opacity:1;}
+  99%{transform:none;opacity:0;}
+}
+@keyframes glitch2{
+  0%,88%,100%{transform:none;opacity:0;}
+  89%{transform:translate(4px,-2px);opacity:1;}
+  91%{transform:translate(-4px,2px);opacity:1;}
+  93%{transform:none;opacity:0;}
+}
+.h1-line3{display:block;color:var(--white);opacity:.12;}
+
+.hero-bottom{
+  position:relative;z-index:3;
+  padding:40px 48px 56px;
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:0;
+  border-top:1px solid var(--line2);
+  opacity:0;animation:slide-up .8s ease 2.35s both;
+}
+.hb-cell{
+  padding:28px 32px;
+  border-right:1px solid var(--line);
+}
+.hb-cell:first-child{padding-left:0;}
+.hb-cell:last-child{border-right:none;}
+.hb-num{
+  font-family:'Space Mono',monospace;font-size:2.8rem;font-weight:700;
+  line-height:1;letter-spacing:-.03em;color:var(--red);
+  margin-bottom:6px;
+}
+.hb-num span{font-size:1.2rem;}
+.hb-label{font-size:.72rem;font-weight:300;line-height:1.6;color:var(--dim);}
+.hb-cta{
+  padding:28px 32px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  gap:16px;
+}
+.hb-desc{font-size:.85rem;font-weight:300;line-height:1.8;color:var(--dim);}
+
+/* ═══════════════════════════════════
+   MARQUEE
+═══════════════════════════════════ */
+.mq{
+  background:var(--red);
+  padding:12px 0;overflow:hidden;
+}
+.mq-track{display:flex;white-space:nowrap;animation:mq 22s linear infinite;}
+@keyframes mq{to{transform:translateX(-50%);}}
+.mq-item{
+  display:inline-flex;align-items:center;gap:16px;padding:0 28px;
+  font-family:'Space Mono',monospace;font-size:.62rem;
+  font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#000;
+}
+.mq-sep{font-size:.5rem;opacity:.4;}
+
+/* ═══════════════════════════════════
+   PROBLEM
+═══════════════════════════════════ */
+.prob-sec{background:var(--bg2);padding:100px 0 0;}
+.prob-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 48px 48px;
+  border-bottom:1px solid var(--line2);
+}
+.sec-tag{
+  font-family:'Space Mono',monospace;font-size:.58rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--red);
+  display:flex;align-items:center;gap:10px;
+}
+.sec-tag::before{content:'';width:16px;height:1px;background:var(--red);}
+.prob-h2{
+  font-size:clamp(2.5rem,4.5vw,5.5rem);font-weight:700;
+  text-transform:uppercase;line-height:.92;letter-spacing:-.03em;
+  text-align:right;
+}
+.prob-h2 .accent{color:var(--red);}
+
+.data-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid var(--line2);
+}
+.ds-cell{
+  padding:44px 40px;
+  border-right:1px solid var(--line2);
+  position:relative;overflow:hidden;
+  transition:background .3s;
+}
+.ds-cell:last-child{border-right:none;}
+.ds-cell:hover{background:rgba(255,59,59,.04);}
+.ds-bar{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--red);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .5s ease;
+}
+.ds-cell:hover .ds-bar{transform:scaleX(1);}
+.ds-val{
+  font-family:'Space Mono',monospace;
+  font-size:3.5rem;font-weight:700;line-height:1;letter-spacing:-.03em;
+  color:var(--white);margin-bottom:10px;
+}
+.ds-val sup{font-size:1.4rem;}
+.ds-desc{font-size:.78rem;font-weight:300;line-height:1.65;color:var(--dim);}
+.ds-src{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dimmer);margin-top:12px;}
+
+.prob-body{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--line2);
+}
+.pb-col{padding:52px 48px;border-right:1px solid var(--line2);}
+.pb-col:last-child{border-right:none;}
+.pb-label{
+  font-family:'Space Mono',monospace;font-size:.55rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--dimmer);
+  margin-bottom:20px;
+}
+.pb-text{font-size:.9rem;font-weight:300;line-height:1.9;color:rgba(240,238,233,.65);}
+.pb-text strong{color:var(--white);font-weight:500;}
+
+/* ═══════════════════════════════════
+   ALERT BAND
+═══════════════════════════════════ */
+.alert-band{
+  background:var(--surface);
+  border-top:1px solid var(--line2);
+  border-bottom:1px solid var(--line2);
+  padding:44px 48px;
+  display:flex;align-items:center;gap:40px;
+}
+.alert-icon{
+  width:52px;height:52px;flex-shrink:0;
+  border:1px solid var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;color:var(--red);
+  animation:pulse 2s ease-in-out infinite;
+}
+.alert-text{
+  font-family:'Space Mono',monospace;
+  font-size:clamp(1rem,2vw,1.6rem);font-weight:700;
+  letter-spacing:.01em;line-height:1.3;
+  color:var(--white);flex:1;
+}
+.alert-text .hl{color:var(--red);}
+.alert-sub{font-size:.8rem;font-weight:400;color:var(--dim);font-family:'Space Grotesk',sans-serif;margin-top:6px;}
+
+/* ═══════════════════════════════════
+   CHALLENGE
+═══════════════════════════════════ */
+.ch-sec{background:var(--bg);padding:0;}
+.ch-top{
+  padding:80px 48px 56px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px solid var(--line2);
+}
+.ch-top h2{
+  font-size:clamp(2.8rem,5vw,6rem);font-weight:700;
+  text-transform:uppercase;letter-spacing:-.03em;line-height:.92;
+}
+.ch-top h2 em{font-style:normal;color:var(--red);}
+.ch-badge{
+  font-family:'Space Mono',monospace;font-size:.58rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid rgba(61,255,143,.3);color:var(--green);
+  padding:8px 16px;display:flex;align-items:center;gap:8px;
+}
+.badge-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse-g 1.8s ease-in-out infinite;}
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(61,255,143,.4);}50%{box-shadow:0 0 0 7px rgba(61,255,143,0);}}
+
+.ch-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+}
+.ch-left{
+  padding:60px 48px;
+  border-right:1px solid var(--line2);
+}
+.ch-body{font-size:.88rem;font-weight:300;line-height:1.9;color:var(--dim);margin-bottom:40px;}
+
+.terminal{
+  background:#000;
+  border:1px solid rgba(61,255,143,.25);
+  padding:0;
+  font-family:'Space Mono',monospace;
+}
+.term-header{
+  background:rgba(61,255,143,.07);
+  border-bottom:1px solid rgba(61,255,143,.15);
+  padding:10px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.term-dots{display:flex;gap:6px;}
+.term-dot{width:10px;height:10px;border-radius:50%;}
+.td1{background:#FF5F57;}
+.td2{background:#FFBD2E;}
+.td3{background:#28CA41;}
+.term-title{font-size:.55rem;letter-spacing:.15em;color:rgba(61,255,143,.4);}
+.term-body{padding:24px 20px;}
+.term-line{
+  font-size:.6rem;letter-spacing:.08em;color:rgba(61,255,143,.4);
+  margin-bottom:4px;
+}
+.term-prompt{color:rgba(61,255,143,.6);}
+.timer-display{
+  display:flex;align-items:baseline;gap:8px;
+  margin:12px 0 20px;
+}
+.t-val{
+  font-size:4rem;font-weight:700;line-height:1;
+  color:var(--green);letter-spacing:-.04em;
+  text-shadow:0 0 20px rgba(61,255,143,.3);
+}
+.t-sep{font-size:3rem;color:rgba(61,255,143,.3);padding-bottom:8px;}
+.t-unit{text-align:center;}
+.t-lbl{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(61,255,143,.3);display:block;margin-top:2px;}
+.term-btn{
+  display:block;width:100%;padding:14px;
+  background:var(--green);color:#000;
+  font-family:'Space Mono',monospace;font-size:.65rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;border:none;cursor:none;
+  transition:background .2s,box-shadow .2s;
+}
+.term-btn:hover{background:#7affe0;box-shadow:0 0 20px rgba(61,255,143,.3);}
+.term-running{font-size:.55rem;letter-spacing:.1em;color:rgba(61,255,143,.5);margin-top:10px;display:none;}
+
+.ch-right{padding:60px 48px;}
+.steps{list-style:none;}
+.step{
+  display:flex;gap:20px;padding:22px 0;
+  border-bottom:1px solid var(--line);
+  transition:padding-left .2s,background .2s;
+}
+.step:first-child{padding-top:0;}
+.step:last-child{border:none;}
+.step:hover{padding-left:8px;}
+.step-num{
+  font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;
+  color:var(--red);opacity:.5;min-width:28px;line-height:1.8;
+}
+.step h4{font-size:.84rem;font-weight:700;color:var(--white);margin-bottom:5px;letter-spacing:.01em;}
+.step p{font-size:.77rem;font-weight:300;line-height:1.7;color:var(--dim);}
+
+/* ═══════════════════════════════════
+   CHECKLIST
+═══════════════════════════════════ */
+.ck-sec{
+  background:var(--bg2);
+  display:grid;grid-template-columns:1fr 1fr;
+  border-top:1px solid var(--line2);
+}
+.ck-left{
+  padding:80px 48px;
+  border-right:1px solid var(--line2);
+}
+.ck-left h2{
+  font-size:clamp(2.5rem,4vw,4.5rem);font-weight:700;
+  text-transform:uppercase;letter-spacing:-.03em;line-height:.92;
+  margin-bottom:24px;
+}
+.ck-left h2 .acc{color:var(--amber);}
+.ck-left p{font-size:.87rem;font-weight:300;line-height:1.9;color:var(--dim);margin-bottom:16px;}
+.ck-features{display:flex;flex-direction:column;gap:14px;margin:32px 0 44px;}
+.ck-f{display:flex;align-items:center;gap:14px;cursor:none;}
+.ck-f-icon{
+  width:30px;height:30px;flex-shrink:0;
+  border:1px solid rgba(240,238,233,.1);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--dimmer);
+  transition:background .2s,border-color .2s,color .2s;
+}
+.ck-f:hover .ck-f-icon{background:rgba(245,166,35,.12);border-color:var(--amber);color:var(--amber);}
+.ck-f span{font-size:.82rem;font-weight:300;color:rgba(240,238,233,.7);}
+
+.ck-right{padding:80px 48px;}
+.ck-card{
+  border:1px solid var(--line2);background:var(--bg3);overflow:hidden;
+}
+.ck-hd{
+  background:var(--surface);padding:18px 26px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--line2);
+}
+.ck-hd-title{
+  font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;
+  color:var(--white);letter-spacing:.05em;
+}
+.ck-hd-badge{
+  font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--amber);
+  border:1px solid rgba(245,166,35,.3);padding:4px 10px;
+}
+.ck-grp{padding:20px 26px 0;}
+.ck-grp:last-child{padding-bottom:26px;}
+.ck-cat{
+  font-family:'Space Mono',monospace;font-size:.52rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--amber);
+  margin-bottom:10px;display:flex;align-items:center;gap:10px;
+}
+.ck-cat::after{content:'';flex:1;height:1px;background:rgba(245,166,35,.12);}
+.ck-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--line);
+  cursor:none;transition:padding-left .15s;
+}
+.ck-item:last-child{border:none;}
+.ck-item:hover{padding-left:4px;}
+.ck-box{
+  width:16px;height:16px;
+  border:1px solid rgba(240,238,233,.2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;transition:all .15s;
+}
+.ck-item.done .ck-box{background:var(--green);border-color:var(--green);color:#000;}
+.ck-item.done .ck-lbl{color:rgba(240,238,233,.25);text-decoration:line-through;}
+.ck-item.done .ck-ico{opacity:.25;}
+.ck-lbl{font-size:.78rem;font-weight:300;color:rgba(240,238,233,.7);}
+.ck-ico{flex-shrink:0;color:var(--dimmer);transition:color .2s,opacity .2s;}
+.ck-item:hover .ck-ico{color:var(--amber);}
+
+/* ═══════════════════════════════════
+   FINAL CTA
+═══════════════════════════════════ */
+.cta-sec{
+  background:var(--bg);
+  border-top:1px solid var(--line2);
+  padding:100px 48px;
+  position:relative;overflow:hidden;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center;
+}
+.cta-sec::before{
+  content:'24';position:absolute;right:-40px;top:50%;transform:translateY(-50%);
+  font-family:'Space Mono',monospace;font-size:30rem;font-weight:700;
+  color:rgba(255,59,59,.03);line-height:1;pointer-events:none;
+}
+.cta-left h2{
+  font-size:clamp(3rem,5.5vw,7rem);font-weight:700;
+  text-transform:uppercase;letter-spacing:-.04em;line-height:.9;
+  margin-bottom:20px;
+}
+.cta-left h2 em{font-style:normal;color:var(--red);}
+.cta-left p{font-size:.9rem;font-weight:300;line-height:1.9;color:var(--dim);margin-bottom:40px;max-width:420px;}
+.cta-btns{display:flex;gap:14px;flex-wrap:wrap;}
+
+.cta-right{position:relative;display:flex;align-items:center;justify-content:center;}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--surface);
+  border-top:1px solid var(--line2);
+  padding:36px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.foot-logo{
+  font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700;
+  color:rgba(240,238,233,.4);letter-spacing:.05em;
+  display:flex;align-items:center;gap:8px;
+}
+.foot-ld{width:6px;height:6px;background:var(--red);border-radius:50%;}
+.foot-copy{font-size:.6rem;letter-spacing:.15em;color:var(--dimmer);}
+.foot-link{
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid rgba(74,158,255,.3);padding-bottom:2px;
+  transition:color .2s,border-color .2s;
+}
+.foot-link:hover{color:#fff;border-color:var(--blue);}
+
+/* ── SCROLL REVEAL ── */
+.sr{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
+.sr.in{opacity:1;transform:none;}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+@keyframes slide-up{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+
+/* ── SECONDARY SITE BANNER ── */
+.secondary-banner{
+  background: linear-gradient(135deg, rgba(74,158,255,0.08) 0%, rgba(11,11,11,0) 100%);
+  border-bottom: 1px solid rgba(74,158,255,0.2);
+  padding: 14px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 400;
+  margin-top: 81px;
+}
+.sb-text{
+  font-family:'Space Mono',monospace;font-size:.58rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(74,158,255,.6);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-text::before{content:'→';color:var(--blue);}
+
+@media(max-width:960px){
+  nav{padding:18px 24px;}
+  .nav-links{display:none;}
+  .hero-content{padding:0 24px 0;padding-top:100px;}
+  .hero-bottom{grid-template-columns:1fr;padding:0 24px 40px;}
+  .hb-cell{border-right:none;border-bottom:1px solid var(--line);padding:20px 0;}
+  .hero-live{display:none;}
+  .data-strip{grid-template-columns:1fr 1fr;}
+  .prob-body{grid-template-columns:1fr;}
+  .pb-col{border-right:none;border-bottom:1px solid var(--line2);}
+  .ch-grid{grid-template-columns:1fr;}
+  .ch-left{border-right:none;border-bottom:1px solid var(--line2);}
+  .ck-sec{grid-template-columns:1fr;}
+  .ck-left{border-right:none;border-bottom:1px solid var(--line2);}
+  .cta-sec{grid-template-columns:1fr;padding:64px 24px;}
+  .cta-sec::before{display:none;}
+  .cta-right{display:none;}
+  footer{padding:28px 24px;flex-direction:column;gap:12px;}
+  .prob-header,.ch-top,.ch-left,.ch-right,.ck-left,.ck-right,.cta-left{padding-left:24px;padding-right:24px;}
+  .ds-cell,.pb-col{padding:32px 24px;}
+  .alert-band{padding:32px 24px;flex-direction:column;gap:20px;}
+  .secondary-banner{padding:12px 24px;flex-direction:column;gap:10px;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="ld-top">// SYSTEM LOADING</div>
+  <div class="ld-pct" id="ldPct">0%</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+  <div class="ld-msg">Initializing digital detox protocol...</div>
+</div>
+
+<!-- Cursor -->
+<div class="cur" id="cD"><div class="cur-d"></div></div>
+<div class="cur" id="cR"><div class="cur-r" id="cREl"></div></div>
+
+<!-- Nav -->
+<nav id="nav">
+  <a href="#" class="nav-logo"><span class="logo-dot"></span>UNPLUG</a>
+  <ul class="nav-links">
+    <li><a href="#problem">The Problem</a></li>
+    <li><a href="#challenge">Challenge</a></li>
+    <li><a href="#resource">Toolkit</a></li>
+  </ul>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <a href="science.html" class="nav-cta ghost">The Science →</a>
+    <a href="#challenge" class="nav-cta">Take the Challenge →</a>
+  </div>
+</nav>
+
+<!-- Secondary Site Banner -->
+<div class="secondary-banner">
+  <span class="sb-text">New: Dive deeper — explore the neuroscience, recovery research, and expert voices behind the movement</span>
+  <a href="science.html" style="font-family:'Space Mono',monospace;font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);text-decoration:none;border:1px solid rgba(74,158,255,.3);padding:8px 16px;white-space:nowrap;transition:all .2s;cursor:none;" onmouseenter="this.style.background='rgba(74,158,255,0.1)'" onmouseleave="this.style.background='transparent'">VISIT SCIENCE HUB →</a>
+</div>
+
+<!-- ═════ HERO ═════ -->
+<section class="hero" id="home">
+  <div class="hero-grid"></div>
+  <div class="hero-vignette"></div>
+
+  <div class="hero-live">
+    <div class="live-label"><span class="live-dot"></span>Live · Your screen time today</div>
+    <div class="live-screen-time" id="liveTime">0h 00m</div>
+    <div class="live-unit">hours : minutes</div>
+    <div class="live-today">since you woke up</div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-tag"><span class="tag-bar"></span>Digital Detox Initiative — 2025</div>
+    <h1 class="hero-h1">
+      <span class="h1-line1">UNPLUG</span>
+      <span class="h1-line2" data-text="RECONNECT">RECONNECT</span>
+      <span class="h1-line3">LIVE</span>
+    </h1>
+  </div>
+
+  <div class="hero-bottom">
+    <div class="hb-cell">
+      <div class="hb-num">7.2<span>h</span></div>
+      <div class="hb-label">Average daily screen time — more than a full school day lost to devices</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-num">71<span>%</span></div>
+      <div class="hb-label">Of heavy social media users show clinical anxiety symptoms</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-num">23<span>m</span></div>
+      <div class="hb-label">To regain focus after a single notification disruption</div>
+    </div>
+    <div class="hb-cta">
+      <p class="hb-desc">Your life is happening offline. Join thousands of students reclaiming their attention, sleep, and presence.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="#challenge" class="nav-cta">Take the Challenge →</a>
+        <a href="science.html" style="font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);text-decoration:none;padding:10px 0;border-bottom:1px solid rgba(74,158,255,.25);cursor:none;transition:color .2s;" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='var(--blue)'">The Science</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="mq">
+  <div class="mq-track">
+    <div class="mq-item">PUT DOWN YOUR PHONE<span class="mq-sep">///</span></div>
+    <div class="mq-item">7.2 HOURS A DAY<span class="mq-sep">///</span></div>
+    <div class="mq-item">71% ELEVATED ANXIETY<span class="mq-sep">///</span></div>
+    <div class="mq-item">TAKE THE 24-HOUR CHALLENGE<span class="mq-sep">///</span></div>
+    <div class="mq-item">YOUR LIFE IS HAPPENING OFFLINE<span class="mq-sep">///</span></div>
+    <div class="mq-item">58% SLEEP DISRUPTION<span class="mq-sep">///</span></div>
+    <div class="mq-item">RECLAIM YOUR ATTENTION<span class="mq-sep">///</span></div>
+    <div class="mq-item">PUT DOWN YOUR PHONE<span class="mq-sep">///</span></div>
+    <div class="mq-item">7.2 HOURS A DAY<span class="mq-sep">///</span></div>
+    <div class="mq-item">71% ELEVATED ANXIETY<span class="mq-sep">///</span></div>
+    <div class="mq-item">TAKE THE 24-HOUR CHALLENGE<span class="mq-sep">///</span></div>
+    <div class="mq-item">YOUR LIFE IS HAPPENING OFFLINE<span class="mq-sep">///</span></div>
+    <div class="mq-item">58% SLEEP DISRUPTION<span class="mq-sep">///</span></div>
+    <div class="mq-item">RECLAIM YOUR ATTENTION<span class="mq-sep">///</span></div>
+  </div>
+</div>
+
+<!-- ═════ PROBLEM ═════ -->
+<section class="prob-sec" id="problem">
+  <div class="prob-header sr">
+    <div class="sec-tag">01 — The Problem</div>
+    <h2 class="prob-h2">YOUR BRAIN<br>ON <span class="accent">DOPAMINE</span><br>LOOPS</h2>
+  </div>
+
+  <div class="data-strip">
+    <div class="ds-cell sr">
+      <div class="ds-bar"></div>
+      <div class="ds-val">7.2<sup>h</sup></div>
+      <div class="ds-desc">Average daily screen time — more than a full working day consumed by devices each day</div>
+      <div class="ds-src">Common Sense Media · 2024</div>
+    </div>
+    <div class="ds-cell sr d1">
+      <div class="ds-bar"></div>
+      <div class="ds-val">71<sup>%</sup></div>
+      <div class="ds-desc">Heavy social media users with clinical anxiety vs. only 26% of light users</div>
+      <div class="ds-src">JAMA Psychiatry</div>
+    </div>
+    <div class="ds-cell sr d2">
+      <div class="ds-bar"></div>
+      <div class="ds-val">3<sup>×</sup></div>
+      <div class="ds-desc">Higher depression rates in students who check phones within 10 minutes of waking</div>
+      <div class="ds-src">University of Pittsburgh</div>
+    </div>
+    <div class="ds-cell sr d3">
+      <div class="ds-bar"></div>
+      <div class="ds-val">58<sup>%</sup></div>
+      <div class="ds-desc">Students reporting device-related sleep disruption affecting academic performance</div>
+      <div class="ds-src">Sleep Foundation · 2024</div>
+    </div>
+  </div>
+
+  <div class="prob-body">
+    <div class="pb-col sr">
+      <div class="pb-label">// What's happening</div>
+      <p class="pb-text">Social media platforms are <strong>engineered to be addictive</strong>. Every notification, every infinite scroll, every algorithmic feed is a calculated system designed to hijack your attention — and it's working with devastating efficiency on your generation.</p>
+      <p class="pb-text" style="margin-top:18px">Blue light from screens <strong>suppresses melatonin</strong>, delaying natural sleep onset by hours. Students are chronically sleep-deprived before the day even begins. The damage is cumulative and compounding.</p>
+    </div>
+    <div class="pb-col sr d1">
+      <div class="pb-label">// What it's costing you</div>
+      <p class="pb-text">Every hour you spend scrolling is an hour your brain spends <strong>rewiring itself</strong> to crave more stimulation, shorter feedback loops, and less patience for deep, meaningful work. Your ability to focus is being sold by the minute.</p>
+      <p class="pb-text" style="margin-top:18px">The result: a generation that struggles to sit with silence, sustain attention, or be fully present in a room with other people. <strong>This isn't a personal failure — it's a design feature.</strong></p>
+    </div>
+  </div>
+
+  <div class="alert-band sr">
+    <div class="alert-icon">⚠</div>
+    <div>
+      <div class="alert-text">"You are not the customer. <span class="hl">You are the product.</span>"</div>
+      <div class="alert-sub">The average student will spend 11 years of their life staring at a screen. Most of it was not their choice.</div>
+    </div>
+    <a href="science.html#neuroscience" style="font-family:'Space Mono',monospace;font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);text-decoration:none;border:1px solid rgba(74,158,255,.3);padding:10px 18px;white-space:nowrap;flex-shrink:0;cursor:none;transition:all .2s;" onmouseenter="this.style.background='rgba(74,158,255,0.1)'" onmouseleave="this.style.background='transparent'">Learn The Science →</a>
+  </div>
+</section>
+
+<!-- ═════ CHALLENGE ═════ -->
+<section class="ch-sec" id="challenge">
+  <div class="ch-top">
+    <div class="sr">
+      <div class="sec-tag" style="margin-bottom:16px">02 — The Challenge</div>
+      <h2>24 HOURS.<br>NO PHONE.<br><em>NO EXCUSES.</em></h2>
+    </div>
+    <div class="ch-badge sr"><span class="badge-dot"></span>Challenge Active</div>
+  </div>
+
+  <div class="ch-grid">
+    <div class="ch-left sr">
+      <p class="ch-body">Put down your device for one full day. No Instagram. No TikTok. No group chats. Just you, your thoughts, and the world directly in front of you. Notice what returns when the feed goes quiet.</p>
+      <div class="terminal">
+        <div class="term-header">
+          <div class="term-dots"><div class="term-dot td1"></div><div class="term-dot td2"></div><div class="term-dot td3"></div></div>
+          <div class="term-title">detox-timer.exe</div>
+        </div>
+        <div class="term-body">
+          <div class="term-line"><span class="term-prompt">$</span> initialize_challenge --duration=86400</div>
+          <div class="term-line"><span class="term-prompt">$</span> status: <span style="color:var(--green)">READY</span></div>
+          <div class="timer-display">
+            <div class="t-unit"><span class="t-val" id="tH">24</span><span class="t-lbl">hrs</span></div>
+            <span class="t-sep">:</span>
+            <div class="t-unit"><span class="t-val" id="tM">00</span><span class="t-lbl">min</span></div>
+            <span class="t-sep">:</span>
+            <div class="t-unit"><span class="t-val" id="tS">00</span><span class="t-lbl">sec</span></div>
+          </div>
+          <button class="term-btn" id="startBtn" onclick="startTimer()">▶ BEGIN CHALLENGE</button>
+          <div class="term-running" id="termRunning"><span class="term-prompt">$</span> challenge running... do not touch your phone</div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-right sr d1">
+      <div class="pb-label" style="margin-bottom:24px">// How it works</div>
+      <ul class="steps">
+        <li class="step"><span class="step-num">01</span><div><h4>Commit publicly</h4><p>Tell a friend, post your intention, write it down. Public accountability increases follow-through by 65%. Your word is your commitment.</p></div></li>
+        <li class="step"><span class="step-num">02</span><div><h4>Prepare your environment</h4><p>Enable emergency calls only. Inform key contacts. Set your out-of-office. Remove all friction from the commitment before you begin.</p></div></li>
+        <li class="step"><span class="step-num">03</span><div><h4>Journal the experience</h4><p>Use paper. Document urges, feelings, moments of unexpected clarity. These observations are your personal data set.</p></div></li>
+        <li class="step"><span class="step-num">04</span><div><h4>Fill silence with intention</h4><p>Have three offline activities planned. Walk, read, cook, create. Boredom is productive — your resting mind does its best work here.</p></div></li>
+        <li class="step"><span class="step-num">05</span><div><h4>Reflect and share your results</h4><p>What surprised you? What returned? Share your experience and be the reason someone else takes the first step.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ CHECKLIST ═════ -->
+<section class="ck-sec" id="resource">
+  <div class="ck-left sr">
+    <div class="sec-tag" style="margin-bottom:20px">03 — The Toolkit</div>
+    <h2>DIGITAL<br>BOUNDARIES<br><span class="acc">CHECKLIST</span></h2>
+    <p style="margin-top:28px">A free, practical guide to building sustainable digital habits — backed by behavioral science, not shame. For students who want to feel better, focus longer, and sleep through the night.</p>
+    <div class="ck-features">
+      <div class="ck-f">
+        <div class="ck-f-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <circle cx="8" cy="9" r="2.8"/>
+            <line x1="8" y1="1.5" x2="8" y2="3"/>
+            <line x1="12.6" y1="3.4" x2="11.6" y2="4.4"/>
+            <line x1="14.5" y1="8" x2="13" y2="8"/>
+            <line x1="12.6" y1="12.6" x2="11.6" y2="11.6"/>
+            <line x1="3.4" y1="3.4" x2="4.4" y2="4.4"/>
+            <line x1="1.5" y1="8" x2="3" y2="8"/>
+            <line x1="3.4" y1="12.6" x2="4.4" y2="11.6"/>
+            <line x1="1" y1="14" x2="15" y2="14"/>
+          </svg>
+        </div>
+        <span>Morning protocol — 30 minutes screen-free on waking</span>
+      </div>
+      <div class="ck-f">
+        <div class="ck-f-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M6 12.5 A2 2 0 0 0 10 12.5"/>
+            <path d="M3 11 C3 11 3 7 5 5.5 C5 3.5 6.3 2.5 8 2.5 C9.7 2.5 11 3.5 11 5.5 C13 7 13 11 13 11 Z"/>
+            <line x1="2" y1="2" x2="14" y2="14" stroke="var(--red)" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <span>Notification audit — cut everything that doesn't serve you</span>
+      </div>
+      <div class="ck-f">
+        <div class="ck-f-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M12.5 10 A5.5 5.5 0 1 1 6 3.5 A4 4 0 0 0 12.5 10 Z"/>
+            <line x1="12" y1="3" x2="12" y2="4.2"/>
+            <line x1="11.4" y1="3.6" x2="12.6" y2="3.6"/>
+            <line x1="14" y1="6" x2="14" y2="7.2"/>
+            <line x1="13.4" y1="6.6" x2="14.6" y2="6.6"/>
+          </svg>
+        </div>
+        <span>Nighttime wind-down — protect your sleep window hard</span>
+      </div>
+      <div class="ck-f">
+        <div class="ck-f-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <circle cx="8" cy="9.5" r="5"/>
+            <line x1="8" y1="9.5" x2="8" y2="6.5"/>
+            <line x1="8" y1="9.5" x2="10.2" y2="9.5"/>
+            <line x1="6.5" y1="1.5" x2="9.5" y2="1.5"/>
+            <line x1="8" y1="1.5" x2="8" y2="3"/>
+            <line x1="13" y1="4" x2="14" y2="3"/>
+          </svg>
+        </div>
+        <span>Realistic screen limits — intentional, not punitive</span>
+      </div>
+      <div class="ck-f">
+        <div class="ck-f-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M8 13 C8 13 3 11.5 2 12.5 L2 4 C3 3 8 4.5 8 4.5"/>
+            <path d="M8 13 C8 13 13 11.5 14 12.5 L14 4 C13 3 8 4.5 8 4.5"/>
+            <line x1="8" y1="4.5" x2="8" y2="13"/>
+            <line x1="4" y1="6.5" x2="7" y2="7.2"/>
+            <line x1="4" y1="8.5" x2="7" y2="9.2"/>
+            <line x1="4" y1="10.5" x2="7" y2="11.2"/>
+          </svg>
+        </div>
+        <span>Weekly check-in — recognize your patterns early</span>
+      </div>
+    </div>
+    <a href="#" style="font-family:'Space Mono',monospace;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--amber);color:#000;padding:14px 32px;text-decoration:none;cursor:none;transition:background .2s;display:inline-flex;align-items:center;gap:8px;" onmouseenter="this.style.background='#ffc04a'" onmouseleave="this.style.background='var(--amber)'">⬇ Download Free PDF</a>
+  </div>
+  <div class="ck-right sr d1">
+    <div class="ck-card">
+      <div class="ck-hd">
+        <span class="ck-hd-title">DIGITAL_BOUNDARIES.pdf</span>
+        <span class="ck-hd-badge">Free</span>
+      </div>
+      <div class="ck-grp">
+        <div class="ck-cat">Morning Routine</div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">No phone for the first 30 minutes after waking</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Disable all non-essential notifications before bed</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Create a device-free breakfast ritual</span></div>
+      </div>
+      <div class="ck-grp">
+        <div class="ck-cat">Study &amp; Focus</div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Phone in another room during all study sessions</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Use a physical timer — not your phone</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Batch-check messages max 3 times per day</span></div>
+      </div>
+      <div class="ck-grp">
+        <div class="ck-cat">Social Media</div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Never open with no intention — state a purpose</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Set a hard daily app limit — 30 minutes max</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Unfollow accounts that consistently make you feel worse</span></div>
+      </div>
+      <div class="ck-grp">
+        <div class="ck-cat">Evening &amp; Sleep</div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">All screens off one hour before sleep</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Phone charges outside your bedroom — always</span></div>
+        <div class="ck-item" onclick="ckT(this)"><div class="ck-box"></div><span class="ck-lbl">Replace scrolling with reading or journaling</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ FINAL CTA ═════ -->
+<div class="cta-sec">
+  <div class="cta-left sr">
+    <h2>YOUR LIFE<br>IS <em>OFFLINE</em></h2>
+    <p>Stop letting an algorithm decide how you feel. Stop trading your attention for a dopamine hit. Take the 24-hour challenge. Download the checklist. Start today.</p>
+    <div class="cta-btns">
+      <a href="#challenge" class="nav-cta">Take the Challenge →</a>
+      <a href="science.html" style="font-family:'Space Mono',monospace;font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(74,158,255,.35);color:var(--blue);padding:10px 22px;text-decoration:none;cursor:none;transition:all .2s;display:inline-flex;align-items:center;" onmouseenter="this.style.background='rgba(74,158,255,0.1)';this.style.borderColor='var(--blue)'" onmouseleave="this.style.background='transparent';this.style.borderColor='rgba(74,158,255,.35)'">The Science Hub →</a>
+    </div>
+  </div>
+  <div class="cta-right sr d1">
+    <svg viewBox="0 0 340 480" width="340" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <rect x="90" y="60" width="160" height="300" rx="20" fill="#1C1C1C" stroke="rgba(255,59,59,0.3)" stroke-width="1.5"/>
+      <rect x="100" y="80" width="140" height="240" rx="4" fill="#111"/>
+      <rect x="108" y="92" width="80" height="8" rx="3" fill="rgba(255,59,59,0.15)"/>
+      <rect x="108" y="108" width="124" height="6" rx="3" fill="rgba(240,238,233,0.06)"/>
+      <rect x="108" y="120" width="96" height="6" rx="3" fill="rgba(240,238,233,0.04)"/>
+      <rect x="108" y="140" width="124" height="36" rx="4" fill="rgba(255,59,59,0.08)" stroke="rgba(255,59,59,0.2)" stroke-width=".8"/>
+      <rect x="115" y="148" width="20" height="20" rx="3" fill="rgba(255,59,59,0.2)"/>
+      <rect x="142" y="151" width="60" height="5" rx="2" fill="rgba(240,238,233,0.1)"/>
+      <rect x="142" y="161" width="44" height="4" rx="2" fill="rgba(240,238,233,0.05)"/>
+      <rect x="108" y="184" width="124" height="36" rx="4" fill="rgba(74,158,255,0.06)" stroke="rgba(74,158,255,0.15)" stroke-width=".8"/>
+      <rect x="115" y="192" width="20" height="20" rx="3" fill="rgba(74,158,255,0.2)"/>
+      <rect x="142" y="195" width="50" height="5" rx="2" fill="rgba(240,238,233,0.08)"/>
+      <rect x="142" y="205" width="68" height="4" rx="2" fill="rgba(240,238,233,0.04)"/>
+      <rect x="148" y="68" width="44" height="14" rx="7" fill="#111"/>
+      <rect x="148" y="340" width="44" height="4" rx="2" fill="rgba(240,238,233,0.1)"/>
+      <path d="M 170 140 L 148 180 L 172 200 L 152 240" stroke="rgba(255,59,59,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M 210 160 L 230 185 L 215 210" stroke="rgba(255,59,59,0.4)" stroke-width=".9" stroke-linecap="round"/>
+      <path d="M 155 270 L 130 300 L 145 330" stroke="rgba(255,59,59,0.5)" stroke-width="1" stroke-linecap="round"/>
+      <g><animateTransform attributeName="transform" type="translate" from="0,0" to="-36,-28" dur="7s" repeatCount="indefinite" additive="sum" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+        <rect x="36" y="80" width="44" height="54" rx="8" fill="#1C1C1C" stroke="rgba(255,59,59,0.25)" stroke-width="1" transform="rotate(-22 58 107)"/>
+        <rect x="43" y="89" width="30" height="6" rx="2" fill="rgba(255,59,59,0.15)" transform="rotate(-22 58 107)"/>
+      </g>
+      <g><animateTransform attributeName="transform" type="translate" from="0,0" to="40,-22" dur="8s" repeatCount="indefinite" additive="sum" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+        <rect x="268" y="95" width="38" height="50" rx="7" fill="#1C1C1C" stroke="rgba(74,158,255,0.2)" stroke-width="1" transform="rotate(18 287 120)"/>
+        <rect x="274" y="104" width="26" height="5" rx="2" fill="rgba(74,158,255,0.15)" transform="rotate(18 287 120)"/>
+      </g>
+      <circle cx="74" cy="220" r="3" fill="rgba(255,59,59,0.5)"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/></circle>
+      <circle cx="286" cy="240" r="2.5" fill="rgba(74,158,255,0.5)"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="3.5s" repeatCount="indefinite"/></circle>
+      <circle cx="60" cy="170" r="2" fill="rgba(255,59,59,0.4)"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="4s" repeatCount="indefinite"/></circle>
+      <text x="170" y="438" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="rgba(255,59,59,0.35)" letter-spacing="5" font-weight="700">BREAK FREE</text>
+    </svg>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-logo"><span class="foot-ld"></span>UNPLUG TO RECONNECT</div>
+  <a href="science.html" class="foot-link">→ The Science Hub</a>
+  <div class="foot-copy">Digital Detox Initiative · Student Wellness Campaign · 2025</div>
+</footer>
+
+<script>
+window.addEventListener('load', () => {
+  let n = 0;
+  const el = document.getElementById('ldPct');
+  const iv = setInterval(() => {
+    n = Math.min(100, n + Math.floor(Math.random() * 12) + 3);
+    el.textContent = n + '%';
+    if (n >= 100) { clearInterval(iv); setTimeout(() => document.getElementById('loader').classList.add('gone'), 300); }
+  }, 80);
+});
+
+const cD=document.getElementById('cD'), cR=document.getElementById('cR'), cREl=document.getElementById('cREl');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function a(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; cD.style.cssText=`left:${mx}px;top:${my}px`; cR.style.cssText=`left:${rx}px;top:${ry}px`; requestAnimationFrame(a); })();
+document.querySelectorAll('a,button,.ck-item,.ck-f,.ds-cell,.step').forEach(el => {
+  el.addEventListener('mouseenter', () => cREl.classList.add('xl'));
+  el.addEventListener('mouseleave', () => cREl.classList.remove('xl'));
+});
+
+window.addEventListener('scroll', () => { document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50); });
+
+const io = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }); }, { threshold: 0.08 });
+document.querySelectorAll('.sr').forEach(el => io.observe(el));
+
+function updateLive() {
+  const now = new Date(); const wake = new Date(now); wake.setHours(7,0,0,0);
+  const diff = Math.max(0, now - wake); const h = Math.floor(diff/3600000); const m = Math.floor(diff%3600000/60000);
+  document.getElementById('liveTime').textContent = `${h}h ${String(m).padStart(2,'0')}m`;
+}
+updateLive(); setInterval(updateLive, 30000);
+
+let timerEnd=null, ti=null;
+function startTimer() {
+  if (ti) return;
+  timerEnd = Date.now() + 86400000;
+  const btn = document.getElementById('startBtn');
+  btn.textContent = '⏸ RUNNING — DON\'T TOUCH YOUR PHONE';
+  btn.style.background = '#1a3a1a'; btn.style.color = 'var(--green)';
+  document.getElementById('termRunning').style.display = 'block';
+  ti = setInterval(tick, 1000); tick();
+}
+function tick() {
+  const d = Math.max(0, timerEnd - Date.now()), p = n => String(n).padStart(2,'0');
+  document.getElementById('tH').textContent = p(Math.floor(d/3600000));
+  document.getElementById('tM').textContent = p(Math.floor(d%3600000/60000));
+  document.getElementById('tS').textContent = p(Math.floor(d%60000/1000));
+  if (!d) clearInterval(ti);
+}
+
+function ckT(el) {
+  el.classList.toggle('done');
+  el.querySelector('.ck-box').textContent = el.classList.contains('done') ? '✓' : '';
+}
+</script>
+</body>
+</html>
